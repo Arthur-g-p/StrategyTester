@@ -1,20 +1,26 @@
 #include "stockdata.h"
 
+stockdata* stockdata::instance = NULL;
 
 stockdata::stockdata()
 {
     connect(qnam, &QNetworkAccessManager::finished, this, &stockdata::readyread);
+    api_key = settingsManager::getInstance()->getApiKey();
+    dataframes = new QVector<dataframe>;
     requestAsset("BTC");
 }
 
-stockdata &stockdata::getInstance()
+stockdata *stockdata::getInstance()
 {
+    if(instance==NULL) {
+        instance = new stockdata ();
+    }
     return instance;
 }
 
 QVector<dataframe> *stockdata::getDataframes()
 {
-    return &this->dataframes;
+    return dataframes;
 }
 
 void stockdata::requestAsset(QString symbol, api_function function)
@@ -65,5 +71,5 @@ void stockdata::readyread(QNetworkReply *reply)
             }
         } else { return; }
     }
-    dataframes.append(new_vec);
+    dataframes->append(new_vec); //does not store enough information
 }

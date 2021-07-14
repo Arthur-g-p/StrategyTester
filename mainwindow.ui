@@ -14,38 +14,39 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QFrame" name="horizontalFrame">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>0</y>
-      <width>291</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <widget class="QLabel" name="status_label">
-     <property name="geometry">
-      <rect>
-       <x>13</x>
-       <y>13</y>
-       <width>125</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Downloading (...)</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="QTableWidget" name="tableWidget">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>100</y>
-      <width>256</width>
-      <height>192</height>
+      <x>0</x>
+      <y>0</y>
+      <width>501</width>
+      <height>381</height>
      </rect>
     </property>
+    <property name="lineWidth">
+     <number>1</number>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::NoEditTriggers</set>
+    </property>
+    <property name="alternatingRowColors">
+     <bool>true</bool>
+    </property>
+    <property name="selectionBehavior">
+     <enum>QAbstractItemView::SelectRows</enum>
+    </property>
+    <property name="showGrid">
+     <bool>false</bool>
+    </property>
+    <property name="gridStyle">
+     <enum>Qt::DotLine</enum>
+    </property>
+    <attribute name="horizontalHeaderHighlightSections">
+     <bool>true</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

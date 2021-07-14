@@ -17,16 +17,15 @@ private:
     QSettings *settings;
     QVector<asset> *assets;
 
-    void loadAssets();
 public:
     settingsManager(const settingsManager&) = delete;
 
     static settingsManager* getInstance();
+    QVector<asset> *loadAssets();
     void addAsset(QString name, QString function, QString market);
+    //void removeAsset(QString name);
     QVector<asset> *getAssets() const;
     QString getApiKey();
-
-    //void removeAsset(QString name);
 };
 
 #endif // SETTINGSMANAGER_H

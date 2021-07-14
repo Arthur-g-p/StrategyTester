@@ -1,7 +1,4 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-//settingsManager* settingsManager::instance = nullptr;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     sb = statusBar();
+    stockdata *sd = stockdata::getInstance();
     sb->showMessage("downloading...");
 }
 
@@ -21,33 +19,34 @@ void MainWindow::startUpReady()
 
 void MainWindow::fillMainTable()
 {
+    settingsManager *sm = settingsManager::getInstance();
+    QVector<asset> *assets = sm->getAssets();
+
+    stockdata *sd = stockdata::getInstance();
+    //QVector<dataframe> *asset_values = sd->getDataframes();
+    sd->getDataframes();
     ui->tableWidget->setColumnCount(3);
     ui->tableWidget->setRowCount(2);
     QStringList headers;
     headers <<"Asset Name"<<"Todays price"<<"Percent since yesterday";
     ui->tableWidget->setHorizontalHeaderLabels(headers);
 
-    settingsManager* sd = settingsManager::getInstance();
-    //QVector<dataframe> *a = sd->getDataframes();
-    /*
-    for(int c = 0; c < a->size(); c++)
+    int rowCount = ui->tableWidget->rowCount();
+    for(int c = 0; c < assets->size(); c++)
     {
-        QString tmp = a->at(c).time;
-    }*/
-    QTableWidgetItem *item = new QTableWidgetItem;
-    item->setText("First Entry");
-    ui->tableWidget->setItem(0,0,new QTableWidgetItem("BR"));
-    ui->tableWidget->setItem(0,1,new QTableWidgetItem("100"));
-    ui->tableWidget->setItem(0,2,item);
-    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers); //Themes einstellen.
-        //ui->tableWidget->setItem(1,1,item);
-        //    ui->tableWidget->setItem(1,2,item);
+        rowCount++;
+        ui->tableWidget->setRowCount(rowCount);
+        //QTableWidgetItem *assetName = new QTableWidgetItem;
+        //assetName->setText(assets->at(c).name+"/"+assets->at(c).market);
+        ui->tableWidget->setItem(c,2,new QTableWidgetItem("BR"));
+        ui->tableWidget->setItem(c,1,new QTableWidgetItem("100"));
+        ui->tableWidget->setItem(c,0,new QTableWidgetItem(assets->at(c).name+"/"+assets->at(c).market));
+    }
     //this->setCentralWidget(ui->textField);
     //this->setCentralWidget(ui->graphicsView);
     //stockdata::getInstance();
     //chart->chartView->setParent(ui->horizontalFrame); //call to deleted constructor
 }
-
 
 void MainWindow::on_actionAdd_Asset_triggered()
 {
@@ -56,7 +55,6 @@ void MainWindow::on_actionAdd_Asset_triggered()
     QMessageBox::warning(this, "File", "triggerd");
     //ui->textField->insertPlainText("fuck");
     setWindowTitle("ok");
-    ui->horizontalFrame->setFrameRect(QRect(0,0,500,500));
     //this->setCentralWidget(ui->graphicsView);
     //QWidget::show(ui->graphicsView);
     //data->request("BTC");

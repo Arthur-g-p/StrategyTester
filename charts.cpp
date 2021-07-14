@@ -2,8 +2,8 @@
 
 charts::charts(QString title)
 {
-    stockdata& s = stockdata::getInstance();
-    QVector<dataframe> *df = s.getDataframes();      //Singleton pattern maybe?
+    /*
+    QVector<dataframe> *df = s.getDataframes();
 
     QLineSeries *series = new QLineSeries();
     series->append(0,1);
@@ -38,7 +38,7 @@ charts::charts(QString title)
     chart->setAxisX(axisX, series);
 
     chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->setRenderHint(QPainter::Antialiasing);*/
 }
 
 QChartView* charts::getChartView()

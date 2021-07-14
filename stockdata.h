@@ -22,18 +22,18 @@ class stockdata : public QObject
 {
     Q_OBJECT
 private:
-    static stockdata instance;
+    static stockdata* instance;
     stockdata();
 
     QNetworkAccessManager *qnam = new QNetworkAccessManager();
     QString api_key;
     const QString base_api = "https://www.alphavantage.co/query";
-    QVector<dataframe> dataframes;
+    QVector<dataframe> *dataframes;
 
 public:
     stockdata(const stockdata&) = delete;
 
-    static stockdata& getInstance();
+    static stockdata* getInstance();
     typedef enum {
         DIGITAL_CURRENCY_DAILY,
         DIGITAL_CURRENCY_WEEKLY
@@ -48,4 +48,5 @@ public slots:
 private slots:
     void readyread(QNetworkReply *reply);
 };
+
 #endif // STOCKDATA_H

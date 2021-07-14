@@ -5,6 +5,7 @@
 #include "charts.h"
 #include "settingsmanager.h"
 #include "add_asset.h"
+#include "ui_mainwindow.h"
 
 #include <QLineSeries>
 #include <QChartView>
