@@ -20,10 +20,10 @@ add_asset::~add_asset()
  * */
 void add_asset::on_Ok_button_clicked()
 {
-    //settingsManager& sm = settingsManager::getInstance();
+    settingsManager *sm = settingsManager::getInstance();
     QString market = ui->Market_text->text();
     QString asset = ui->Asset_text->text();
-    //sm.addAsset(asset, 0, market);
+    sm->addAsset(asset, 0, market);
     this->close();
 }
 

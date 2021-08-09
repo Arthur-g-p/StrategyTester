@@ -2,6 +2,9 @@
 #define SETTINGSMANAGER_H
 
 #include <QSettings>
+#include <QCoreApplication>
+#include <QtDebug>
+#include <QMessageBox>
 
 struct asset {
     QString name;
@@ -25,8 +28,7 @@ public:
     void addAsset(QString name, QString function, QString market);
     QVector<asset> *getAssets() const;
     QString getApiKey();
-
-    //void removeAsset(QString name);
+    void removeAsset(QString name);
 };
 
 #endif // SETTINGSMANAGER_H

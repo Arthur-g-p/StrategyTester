@@ -12,18 +12,26 @@ CONFIG += c++11
 
 SOURCES += \
     add_asset.cpp \
+    apicall.cpp \
     charts.cpp \
     main.cpp \
     mainwindow.cpp \
+    observer.cpp \
     settingsmanager.cpp \
-    stockdata.cpp
+    status.cpp \
+    stockdata.cpp \
+    subject.cpp
 
 HEADERS += \
     add_asset.h \
+    apicall.h \
     charts.h \
     mainwindow.h \
+    observer.h \
     settingsmanager.h \
-    stockdata.h
+    status.h \
+    stockdata.h \
+    subject.h
 
 FORMS += \
     add_asset.ui \
@@ -36,3 +44,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     Ressources.qrc
+
+DISTFILES += \
+    config.ini

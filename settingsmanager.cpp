@@ -9,11 +9,13 @@ settingsManager* settingsManager::instance = NULL;
 settingsManager::settingsManager()
 {
     settings = new QSettings("config.ini", QSettings::IniFormat);
-    if(!settings->isWritable()) {
-        qInfo("Ini file not writable");
-    }
-    if(!settings->QSettings::NoError) {
-        qInfo("Access error for ini file"); //Print path where the ini file needs to be
+    if(settings->childGroups().size() <= 0) {
+        qDebug("Access error for ini file or not found");
+        qDebug() << "Ini file should be in the application path: " << QCoreApplication::applicationDirPath() << "named config.ini";
+        addAsset("BTC","0", "USD");
+        addAsset("ETH","0", "USD");
+        addAsset("DAX","0", "EUR"); //Invalid market, look at API
+        settings->setValue("api_key","demo");
     }
     assets = new QVector<asset>;
     assets->clear();
@@ -34,7 +36,12 @@ settingsManager* settingsManager::getInstance()
  */
 QString settingsManager::getApiKey()
 {
-    return settings->value("api_key", "demo").toString();
+    QString apiKey = settings->value("api_key", "demo").toString();
+    if(apiKey == "demo") {
+        //QMessageBox::warning(this, "Api Key", "You do not have an Api Key for. Functions may not work properly. You need a key from https://www.alphavantage.co/", QMessageBox::Ok);
+        qDebug("you do not have an Api Key for. Functions may not work properly. You need a key from https://www.alphavantage.co/");
+    }
+    return apiKey;
 }
 
 void settingsManager::loadAssets()
@@ -63,8 +70,15 @@ QVector<asset> *settingsManager::getAssets() const
 */
 void settingsManager::addAsset(QString name, QString function, QString market)
 {
-    settings->beginGroup(name);
+    settings->beginGroup(name.toUpper());
     settings->setValue("function",function);
-    settings->setValue("market", market);
+    settings->setValue("market", market.toUpper());
     settings->endGroup();
+    //reload
 }
+
+void settingsManager::removeAsset(QString name)
+{
+    settings->remove(name);
+}
+

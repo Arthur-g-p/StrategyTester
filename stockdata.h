@@ -9,6 +9,8 @@
 #include <QNetworkReply>
 #include "mainwindow.h"
 #include "settingsmanager.h"
+#include "observer.h"
+#include "apicall.h"
 
 struct dataframe {
     QString time;
@@ -18,7 +20,7 @@ struct dataframe {
     float close_price;
 };
 
-class stockdata : public QObject
+class stockdata : public observer, public QObject
 {
     Q_OBJECT
 private:
@@ -26,9 +28,7 @@ private:
     stockdata();
 
     QNetworkAccessManager *qnam = new QNetworkAccessManager();
-    QString api_key;
-    const QString base_api = "https://www.alphavantage.co/query";
-    QVector<dataframe> *dataframes;
+    QVector<QVector<dataframe>> *dataframes;
 
 public:
     stockdata(const stockdata&) = delete;
@@ -39,11 +39,14 @@ public:
         DIGITAL_CURRENCY_WEEKLY
     } api_function;
 
-    QVector<dataframe>* getDataframes();
+     QVector<QVector<dataframe>>* getDataframes();
 
+
+     void downloadAllAssets();
+     void update();
 
 public slots:
-    void requestAsset(QString symbol, api_function function = DIGITAL_CURRENCY_WEEKLY);
+    void requestAsset(QString symbol, QString market, api_function function = DIGITAL_CURRENCY_WEEKLY);
 
 private slots:
     void readyread(QNetworkReply *reply);

@@ -20,11 +20,11 @@ void MainWindow::startUpReady()
 void MainWindow::fillMainTable()
 {
     settingsManager *sm = settingsManager::getInstance();
-    QVector<asset> *assets = sm->getAssets();
+    QVector<asset> *assets = sm->getAssets(); //The assets get changed during runtime. Do I handle it?
 
     stockdata *sd = stockdata::getInstance();
-    //QVector<dataframe> *asset_values = sd->getDataframes();
-    sd->getDataframes();
+    QVector<QVector<dataframe>> *asset_values = sd->getDataframes();
+
     ui->tableWidget->setColumnCount(3);
     ui->tableWidget->setRowCount(2);
     QStringList headers;
@@ -36,10 +36,8 @@ void MainWindow::fillMainTable()
     {
         rowCount++;
         ui->tableWidget->setRowCount(rowCount);
-        //QTableWidgetItem *assetName = new QTableWidgetItem;
-        //assetName->setText(assets->at(c).name+"/"+assets->at(c).market);
         ui->tableWidget->setItem(c,2,new QTableWidgetItem("BR"));
-        ui->tableWidget->setItem(c,1,new QTableWidgetItem("100"));
+        ui->tableWidget->setItem(c,1,new QTableWidgetItem("to find out")); //sd->getDataframes()->at(c).at(0).time));
         ui->tableWidget->setItem(c,0,new QTableWidgetItem(assets->at(c).name+"/"+assets->at(c).market));
     }
     //this->setCentralWidget(ui->textField);
@@ -51,13 +49,8 @@ void MainWindow::fillMainTable()
 void MainWindow::on_actionAdd_Asset_triggered()
 {
     fillMainTable();
-    //chart = new charts("BTC");
     QMessageBox::warning(this, "File", "triggerd");
-    //ui->textField->insertPlainText("fuck");
     setWindowTitle("ok");
-    //this->setCentralWidget(ui->graphicsView);
-    //QWidget::show(ui->graphicsView);
-    //data->request("BTC");
 
     newWin = new add_asset();
     newWin->show();
