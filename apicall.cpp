@@ -9,7 +9,7 @@ apicall::apicall(QString apiKey, QString assetName, QString market, QString func
 
 void apicall::attach(observer *observer)
 {
-    observers->append(*observer);
+    observerMember = observer;
 }
 
 void apicall::dettach(observer *observer)
@@ -17,11 +17,9 @@ void apicall::dettach(observer *observer)
     //observers->remove(*observer);
 }
 
-void apicall::notify()
+void apicall::notify(QString message)
 {
-    for(int c = 0; c < observers->size(); c++) {
-        observers->at(c).update;
-    }
+    observerMember->update(message);
 }
 
 void apicall::requestAsset(QString assetName, QString market, QString function)
@@ -45,6 +43,6 @@ void apicall::requestAsset(QString assetName, QString market, QString function)
 
 void apicall::readyread(QNetworkReply *reply)
 {
-    observer *obs = new observer();
-    obs->update();
+    QString output = reply->readAll();
+    notify(output);
 }

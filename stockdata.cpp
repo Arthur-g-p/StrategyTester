@@ -5,6 +5,8 @@ stockdata* stockdata::instance = NULL;
 stockdata::stockdata()
 {
     connect(qnam, &QNetworkAccessManager::finished, this, &stockdata::readyread);
+    currentAssetApiCall = "";
+    currentAssetApiCallIndex = 0;
     dataframes = new QVector<QVector<dataframe>>;
     dataframes->clear();
     downloadAllAssets();
@@ -26,7 +28,7 @@ void stockdata::downloadAllAssets()
     QString apiKey = sm->getApiKey();
     for(int c = 0; c < assets->size(); c++) {
         //requestAsset(assets->at(0).name, assets->at(0).market);
-        apicall ac(apiKey, assets->at(c).name, assets->at(c).market, "0");
+        apicall ac(apiKey, assets->at(c).name, assets->at(c).market, "tbd");
         //request and wait for message to come back. Queue
     }
 }
@@ -44,25 +46,19 @@ QVector<QVector<dataframe>>* stockdata::getDataframes()
     }
 }
 
-void stockdata::requestAsset(QString symbol, QString market, api_function function)
+void stockdata::update(QString message)
 {
-    QString url = base_api;
-    if(function == DIGITAL_CURRENCY_DAILY) {
-        url.append("?function=DIGITAL_CURRENCY_DAILY");
+    if(message.contains("Invalid API call")) {
+        //Delete this asset
+        qInfo("invalid call");
+        settingsManager *sd = settingsManager::getInstance();
+        sd->removeAsset(currentAssetApiCall);
+        currentAssetApiCallIndex -=1;
     }
-    else if (function == DIGITAL_CURRENCY_WEEKLY) {
-        url.append("?function=DIGITAL_CURRENCY_WEEKLY"); //Not everthing is digital
+    else if(message.contains("call frequency is ")) {
+        qInfo("5 calls per minute. Call already queued.");
+
     }
-    url.append("&symbol="+symbol);
-    url.append("&market="+market);
-    url.append("&apikey="+api_key);
-    url.append("&datatype=csv");
-
-    qnam->get(QNetworkRequest(QUrl(url)));
-}
-
-void stockdata::update()
-{
     //Handle request
     //remove bad requests
     //save data in dataframe
@@ -71,16 +67,7 @@ void stockdata::update()
 
 void stockdata::readyread(QNetworkReply *reply)
 {
-    QString output = reply->readAll();
-    // errors ocurring: -5 calls per minute, 500 calls per day --> max frequency. In this case wait and retry. (Invalid tries count)
-    if(output.contains("Invalid API call")) {
-        //Delete this asset
-        qInfo("invalid call");
-    }
-    if(output.contains("call frequency is ")) {
-        qInfo("5 calls per minute. Call already queued.");
-    }
-    // - invalid call. In this case remove this asset
+
     int index = 0;
     QVector <dataframe> completeAsset;
     index = output.indexOf("\n", 0);
@@ -109,4 +96,18 @@ void stockdata::readyread(QNetworkReply *reply)
         } else { break; }
     }
     dataframes->append(completeAsset); //does not store enough information
+}
+
+void stockdata::nextApiCall()
+{
+    currentAssetApiCallIndex++;
+    settingsManager *sd = settingsManager::getInstance();
+    QVector<asset> *assets = sd->getAssets();
+    if(currentAssetApiCallIndex >= assets->size()) {
+        //finished
+        qInfo("All assets downloaded");
+    } else {
+        currentAssetApiCall = assets->at(currentAssetApiCallIndex).name;
+        apicall(sd->getApiKey(), currentAssetApiCall, assets->at(currentAssetApiCallIndex).market, "tbd");
+    }
 }

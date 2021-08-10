@@ -80,5 +80,13 @@ void settingsManager::addAsset(QString name, QString function, QString market)
 void settingsManager::removeAsset(QString name)
 {
     settings->remove(name);
+    for(int c = 0; c < assets->size(); c++) {
+        QString assetName = assets->at(c).name;
+        if(assetName == name) {
+            assets->removeAt(c);
+            break;
+            //Market not taken into consideration yet. Mistake???
+        }
+    }
 }
 

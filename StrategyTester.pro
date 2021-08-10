@@ -16,11 +16,9 @@ SOURCES += \
     charts.cpp \
     main.cpp \
     mainwindow.cpp \
-    observer.cpp \
     settingsmanager.cpp \
     status.cpp \
-    stockdata.cpp \
-    subject.cpp
+    stockdata.cpp
 
 HEADERS += \
     add_asset.h \

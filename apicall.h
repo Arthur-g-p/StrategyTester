@@ -14,10 +14,10 @@ public:
     apicall(QString apiKey, QString assetName, QString market, QString function);
     void attach(observer *observer) override;
     void dettach(observer *observer) override;
-    void notify() override;
+    void notify(QString message) override;
 private:
     QNetworkAccessManager *qnam = new QNetworkAccessManager();
-    QVector<observer> *observers;
+    observer *observerMember;
     QString api_key;
     const QString base_api = "https://www.alphavantage.co/query";
     void requestAsset(QString assetName, QString market, QString function);

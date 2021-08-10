@@ -4,9 +4,6 @@
 #include <QDebug>
 #include <QString>
 #include <QVector>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 #include "mainwindow.h"
 #include "settingsmanager.h"
 #include "observer.h"
@@ -26,9 +23,10 @@ class stockdata : public observer, public QObject
 private:
     static stockdata* instance;
     stockdata();
+    QString currentAssetApiCall;
 
-    QNetworkAccessManager *qnam = new QNetworkAccessManager();
     QVector<QVector<dataframe>> *dataframes;
+
 
 public:
     stockdata(const stockdata&) = delete;
@@ -43,13 +41,7 @@ public:
 
 
      void downloadAllAssets();
-     void update();
-
-public slots:
-    void requestAsset(QString symbol, QString market, api_function function = DIGITAL_CURRENCY_WEEKLY);
-
-private slots:
-    void readyread(QNetworkReply *reply);
+     void update(QString message) override;
 };
 
 #endif // STOCKDATA_H
