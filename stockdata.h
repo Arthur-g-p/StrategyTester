@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QString>
 #include <QVector>
+#include <QTimer>
 #include "mainwindow.h"
 #include "settingsmanager.h"
 #include "observer.h"
@@ -24,10 +25,9 @@ private:
     static stockdata* instance;
     stockdata();
     QString currentAssetApiCall;
-
+    unsigned short currentAssetApiCallIndex;
     QVector<QVector<dataframe>> *dataframes;
-
-
+    void decodeReply(QString reply);
 public:
     stockdata(const stockdata&) = delete;
 
@@ -42,6 +42,9 @@ public:
 
      void downloadAllAssets();
      void update(QString message) override;
+
+private slots:
+    void nextApiCall();
 };
 
 #endif // STOCKDATA_H

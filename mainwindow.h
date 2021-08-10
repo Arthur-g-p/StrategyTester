@@ -29,9 +29,6 @@ public:
     static void startUpReady();
     ~MainWindow();
 
-private slots:
-    void on_actionAdd_Asset_triggered();
-
 private:
     Ui::MainWindow *ui;
     add_asset *newWin;
@@ -39,5 +36,9 @@ private:
     void initTable();
     void fillMainTable();
     //instancees of stockdata has do be saved on the heap otherwise the slots get delted if they lose the scope
+
+
+private slots:
+    void on_actionAdd_Asset_triggered();
 };
 #endif // MAINWINDOW_H

@@ -18,7 +18,8 @@ SOURCES += \
     mainwindow.cpp \
     settingsmanager.cpp \
     status.cpp \
-    stockdata.cpp
+    stockdata.cpp \
+    subject.cpp
 
 HEADERS += \
     add_asset.h \
