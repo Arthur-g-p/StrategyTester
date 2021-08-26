@@ -8,3 +8,4 @@ Work in progress... please come back later for the MVP
 
 Dependencies: 
 Qt 6.1.1
+https://www.alphavantage.co/ API-Key (free)
