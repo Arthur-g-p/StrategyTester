@@ -19,7 +19,9 @@ void apicall::dettach(observer *observer)
 
 void apicall::notify(QString message)
 {
-    observerMember->update(message);
+    //observerMember->update(message);
+    //observer *obs = observerMember;
+    //obs->update(message);
 }
 
 void apicall::requestAsset(QString assetName, QString market, QString function)

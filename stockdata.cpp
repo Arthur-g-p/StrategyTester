@@ -44,7 +44,7 @@ QVector<QVector<dataframe>>* stockdata::getDataframes()
  * \brief this function gets called by apicall when the download is ready. From here it checks for errors and decodes the message
  * \returns no return value
  */
-void stockdata::update(QString message)
+void stockdata::update(QString message)     //Also check if there is a connection
 {
     if(message.contains("Invalid API call")) {          //Deletes this asset
         qInfo("invalid call");

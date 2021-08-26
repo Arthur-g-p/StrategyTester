@@ -6,10 +6,13 @@
 #include <QNetworkReply>
 #include <QString>
 #include "subject.h"
+#include "observer.h"
+
 
 
 class apicall : public subject, public QObject
 {
+    Q_OBJECT
 public:
     apicall(QString apiKey, QString assetName, QString market, QString function);
     void attach(observer *observer) override;
@@ -17,7 +20,7 @@ public:
     void notify(QString message) override;
 private:
     QNetworkAccessManager *qnam = new QNetworkAccessManager();
-    observer *observerMember;
+    observer *observerMember; //this does not work. Find out why. Error: ... not a member of observer in notify.
     QString api_key;
     const QString base_api = "https://www.alphavantage.co/query";
     void requestAsset(QString assetName, QString market, QString function);

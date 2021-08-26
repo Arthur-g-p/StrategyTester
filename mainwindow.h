@@ -35,7 +35,7 @@ private:
     QStatusBar *sb;
     void initTable();
     void fillMainTable();
-    //instancees of stockdata has do be saved on the heap otherwise the slots get delted if they lose the scope
+    //instancees of stockdata has do be saved on the heap otherwise the slots get deleted if they lose the scope
 
 
 private slots:
