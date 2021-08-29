@@ -11,38 +11,35 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    add_asset.cpp \
-    apicall.cpp \
-    charts.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    settingsmanager.cpp \
-    status.cpp \
-    stockdata.cpp \
-    subject.cpp
+    Sources/add_asset.cpp \
+    Sources/apicall.cpp \
+    Sources/charts.cpp \
+    Sources/main.cpp \
+    Sources/mainwindow.cpp \
+    Sources/settingsmanager.cpp \
+    Sources/status.cpp \
+    Sources/stockdata.cpp \
+    Sources/subject.cpp
 
 HEADERS += \
-    add_asset.h \
-    apicall.h \
-    charts.h \
-    mainwindow.h \
-    observer.h \
-    settingsmanager.h \
-    status.h \
-    stockdata.h \
-    subject.h
+    Headers/add_asset.h \
+    Headers/apicall.h \
+    Headers/charts.h \
+    Headers/mainwindow.h \
+    Headers/observer.h \
+    Headers/settingsmanager.h \
+    Headers/status.h \
+    Headers/stockdata.h \
+    Headers/subject.h
 
 FORMS += \
-    add_asset.ui \
-    mainwindow.ui
+    Forms/add_asset.ui \
+    Forms/mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-RESOURCES += \
-    Ressources.qrc
 
 DISTFILES += \
     config.ini
