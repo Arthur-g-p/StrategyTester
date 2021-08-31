@@ -2,7 +2,8 @@
 
 apicall::apicall(QString apiKey, QString assetName, QString market, QString function)
 {
-    connect(qnam, &QNetworkAccessManager::encrypted, this, &apicall::encrypted);
+    qnam = new QNetworkAccessManager();
+    connect(qnam, &QNetworkAccessManager::finished, this, &apicall::readyread);
     api_key = apiKey;
     requestAsset(assetName, market, function);
 }
@@ -19,9 +20,10 @@ void apicall::dettach(stockdata *observer)
 
 void apicall::notify(QString message)
 {
-    observerMember->update(message);
-    //observer *obs = observerMember;
-    //obs->update(message);
+    if(observerMember != NULL)
+    {
+        observerMember->update(message);
+    }
 }
 
 void apicall::requestAsset(QString assetName, QString market, QString function)
@@ -40,8 +42,7 @@ void apicall::requestAsset(QString assetName, QString market, QString function)
     url.append("&apikey="+api_key);
     url.append("&datatype=csv");
 
-    QNetworkReply *reply = qnam->get(QNetworkRequest(QUrl(url)));
-    connect(reply, &QNetworkReply::readyRead, this, &apicall::readyread);
+    qnam->get(QNetworkRequest(QUrl(url)));
 }
 
 void apicall::readyread(QNetworkReply *reply)

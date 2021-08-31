@@ -23,7 +23,11 @@ void add_asset::on_Ok_button_clicked()
     settingsManager *sm = settingsManager::getInstance();
     QString market = ui->Market_text->text();
     QString asset = ui->Asset_text->text();
-    sm->addAsset(asset, 0, market);
+    if(ui->crypto_box->isChecked()) {
+        sm->addAsset(asset, true,market);
+    } else {
+        sm->addAsset(asset, false,market);
+    }
     this->close();
 }
 

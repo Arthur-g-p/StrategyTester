@@ -65,16 +65,22 @@ QVector<asset> *settingsManager::getAssets() const
 
 
 /*!
- * not implemented yet: add market during runtime
+ * not implemented yet: add market during runtime, time periods
  * @arg @name Asset name
 */
-void settingsManager::addAsset(QString name, QString function, QString market)
+void settingsManager::addAsset(QString name, bool crypto, QString market)
 {
+    QString function;
+    if(crypto) {
+        function = "DIGITAL_CURRENCY_WEEKLY";
+    } else {
+        function = "TIME_SERIES_WEEKLY";
+    }
     settings->beginGroup(name.toUpper());
     settings->setValue("function",function);
     settings->setValue("market", market.toUpper());
     settings->endGroup();
-    //reload
+    //reload...
 }
 
 void settingsManager::removeAsset(QString name)

@@ -40,7 +40,7 @@ void MainWindow::fillMainTable()
         rowCount++;
         ui->tableWidget->setRowCount(rowCount);
         ui->tableWidget->setItem(c,2,new QTableWidgetItem("BR"));
-        ui->tableWidget->setItem(c,1,new QTableWidgetItem("to find out")); //sd->getDataframes()->at(c).at(0).time));
+        ui->tableWidget->setItem(c,1,new QTableWidgetItem(sd->getDataframes()->at(c).at(0).open_price)); //sd->getDataframes()->at(c).at(0).time));
         ui->tableWidget->setItem(c,0,new QTableWidgetItem(assets->at(c).name+"/"+assets->at(c).market));
     }
     //this->setCentralWidget(ui->textField);
@@ -54,7 +54,7 @@ void MainWindow::on_actionAdd_Asset_triggered()
     fillMainTable();
     QMessageBox::warning(this, "File", "triggerd");
     setWindowTitle("ok");
-
+    //Programm crashes when called during download
     newWin = new add_asset();
     newWin->show();
 }

@@ -25,7 +25,7 @@ public:
     settingsManager(const settingsManager&) = delete;
 
     static settingsManager* getInstance();
-    void addAsset(QString name, QString function, QString market);
+    void addAsset(QString name, bool crypto, QString market);
     QVector<asset> *getAssets() const;
     QString getApiKey();
     void removeAsset(QString name);

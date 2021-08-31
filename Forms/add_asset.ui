@@ -75,7 +75,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>150</y>
+      <y>170</y>
       <width>80</width>
       <height>30</height>
      </rect>
@@ -88,13 +88,26 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>150</y>
+      <y>170</y>
       <width>80</width>
       <height>30</height>
      </rect>
     </property>
     <property name="text">
      <string>Cancel</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="crypto_box">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>130</y>
+      <width>103</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Crypto?</string>
     </property>
    </widget>
   </widget>

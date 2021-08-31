@@ -55,12 +55,16 @@ void stockdata::update(QString message)     //Also check if there is a connectio
         sd->removeAsset(currentAssetApiCall);
         currentAssetApiCallIndex -=1;
     }
-    else if(message.contains("call frequency is ")) {
+    else if(message.contains("call frequency is ")) {   //Not tested
         qInfo("5 calls per minute. Call already queued.");
         //call after 1 minute. If it does not work after one minute, then 1 day limit is reached
-        QTimer::singleShot(60000, this, &stockdata::nextApiCall);
+        QTimer::singleShot(6000, this, &stockdata::nextApiCall);
+        currentAssetApiCallIndex -=1;
+        return;
     }
-    decodeReply(message);
+    else {
+        decodeCorrectReply(message);
+    }
     nextApiCall();
 }
 
@@ -68,7 +72,7 @@ void stockdata::update(QString message)     //Also check if there is a connectio
  * \brief this function decodes the reply, if it is not an error message, and saves the asset information in the variable dataframes
  * \returns no return value
  */
-void stockdata::decodeReply(QString reply)
+void stockdata::decodeCorrectReply(QString reply)
 {
     int index = 0;
     QVector <dataframe> completeAsset;
@@ -97,7 +101,7 @@ void stockdata::decodeReply(QString reply)
             }
         } else { break; }
     }
-    dataframes->append(completeAsset); //does not store enough information
+    dataframes->append(completeAsset);
 }
 
 void stockdata::nextApiCall()
@@ -108,8 +112,8 @@ void stockdata::nextApiCall()
         qInfo("All API calls have taken place"); //all API calls have taken place. error rate:
     } else {
         currentAssetApiCall = assets->at(currentAssetApiCallIndex).name;
-        QString test = sd->getApiKey();
-        apicall(test, currentAssetApiCall, assets->at(currentAssetApiCallIndex).market, "tbd");
+        apicall *call = new apicall(sd->getApiKey(), currentAssetApiCall, assets->at(currentAssetApiCallIndex).market, "tbd");
+        call->attach(this);
     }
     currentAssetApiCallIndex++;
 }

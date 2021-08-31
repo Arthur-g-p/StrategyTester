@@ -26,7 +26,7 @@ private:
     QString currentAssetApiCall;
     unsigned short currentAssetApiCallIndex;
     QVector<QVector<dataframe>> *dataframes;
-    void decodeReply(QString reply);
+    void decodeCorrectReply(QString reply);
 public:
     stockdata(const stockdata&) = delete;
 
