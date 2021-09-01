@@ -5,7 +5,6 @@
 #include <QString>
 #include <QVector>
 #include <QTimer>
-#include "mainwindow.h"
 #include "settingsmanager.h"
 #include "apicall.h"
 
@@ -25,6 +24,7 @@ private:
     stockdata();
     QString currentAssetApiCall;
     unsigned short currentAssetApiCallIndex;
+    unsigned short invalidCalls;
     QVector<QVector<dataframe>> *dataframes;
     void decodeCorrectReply(QString reply);
 public:
@@ -37,7 +37,6 @@ public:
     } api_function;
 
      QVector<QVector<dataframe>>* getDataframes();
-
 
      void downloadAllAssets();
      void update(QString message);

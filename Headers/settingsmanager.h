@@ -8,6 +8,7 @@
 
 struct asset {
     QString name;
+    QString function;
     QString market;
 };
 

@@ -9,6 +9,7 @@ stockdata::stockdata()
 {
     currentAssetApiCall = "";
     currentAssetApiCallIndex = 0;
+    invalidCalls = 0;
     dataframes = new QVector<QVector<dataframe>>;
     dataframes->clear();
     downloadAllAssets();
@@ -49,16 +50,17 @@ QVector<QVector<dataframe>>* stockdata::getDataframes()
  */
 void stockdata::update(QString message)     //Also check if there is a connection
 {
-    if(message.contains("Invalid API call")) {          //Deletes this asset
+    if(message.contains("Invalid API call")) {
         qInfo("invalid call");
         settingsManager *sd = settingsManager::getInstance();
         sd->removeAsset(currentAssetApiCall);
         currentAssetApiCallIndex -=1;
+        invalidCalls++;
     }
-    else if(message.contains("call frequency is ")) {   //Not tested
+    else if(message.contains("call frequency is ")) {
         qInfo("5 calls per minute. Call already queued.");
         //call after 1 minute. If it does not work after one minute, then 1 day limit is reached
-        QTimer::singleShot(6000, this, &stockdata::nextApiCall);
+        QTimer::singleShot(60000, this, &stockdata::nextApiCall);
         currentAssetApiCallIndex -=1;
         return;
     }
@@ -104,15 +106,23 @@ void stockdata::decodeCorrectReply(QString reply)
     dataframes->append(completeAsset);
 }
 
+/*!
+ * \brief this function starts the next api call in the queue. If there are no calls left, it does nothing
+ * \returns no return value
+ */
 void stockdata::nextApiCall()
 {
     settingsManager *sd = settingsManager::getInstance();
     QVector<asset> *assets = sd->getAssets();
     if(currentAssetApiCallIndex >= assets->size()) {
-        qInfo("All API calls have taken place"); //all API calls have taken place. error rate:
+        QString status = "All API calls have taken place. Invalid calls: ";
+        QString invalidCallsStr = QString::number(invalidCalls) + ". Valid calls: " + QString::number(assets->size());
+        qInfo() << status+invalidCallsStr;
     } else {
         currentAssetApiCall = assets->at(currentAssetApiCallIndex).name;
-        apicall *call = new apicall(sd->getApiKey(), currentAssetApiCall, assets->at(currentAssetApiCallIndex).market, "tbd");
+        apicall *call = new apicall(sd->getApiKey(), currentAssetApiCall,
+                                    assets->at(currentAssetApiCallIndex).market,
+                                    assets->at(currentAssetApiCallIndex).function);
         call->attach(this);
     }
     currentAssetApiCallIndex++;

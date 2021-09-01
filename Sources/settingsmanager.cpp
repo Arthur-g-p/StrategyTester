@@ -12,9 +12,9 @@ settingsManager::settingsManager()
     if(settings->childGroups().size() <= 0) {
         qDebug("Access error for ini file or not found");
         qDebug() << "Ini file should be in the application path: " << QCoreApplication::applicationDirPath() << "named config.ini";
-        addAsset("BTC","0", "USD");
-        addAsset("ETH","0", "USD");
-        addAsset("DAX","0", "EUR"); //Invalid market, look at API
+        addAsset("BTC","DIGITAL_CURRENCY_WEEKLY", "USD");
+        addAsset("ETH","DIGITAL_CURRENCY_WEEKLY", "USD");
+        addAsset("DAX","TIME_SERIES_WEEKLY", "EUR"); //Invalid market, look at API
         settings->setValue("api_key","demo");
     }
     assets = new QVector<asset>;
@@ -27,7 +27,7 @@ settingsManager* settingsManager::getInstance()
     if(instance==NULL) {
         instance = new settingsManager();
     }
-    return instance; //constructor never called
+    return instance;
 }
 
 /*!
@@ -52,12 +52,17 @@ void settingsManager::loadAssets()
         asset assetToAdd;
         //QString function = settings->value("function").toString();
         assetToAdd.market = settings->value("market").toString().toUpper();
+        assetToAdd.function = settings->value("function").toString().toUpper();
         assetToAdd.name = childGroups.at(i).toUpper();
         assets->append(assetToAdd);
         settings->endGroup();
     }
 }
 
+
+/*!
+ * \returns a pointer to the assets
+ */
 QVector<asset> *settingsManager::getAssets() const
 {
     return assets;
@@ -77,7 +82,7 @@ void settingsManager::addAsset(QString name, bool crypto, QString market)
         function = "TIME_SERIES_WEEKLY";
     }
     settings->beginGroup(name.toUpper());
-    settings->setValue("function",function);
+    settings->setValue("function", function);
     settings->setValue("market", market.toUpper());
     settings->endGroup();
     //reload...
@@ -91,7 +96,6 @@ void settingsManager::removeAsset(QString name)
         if(assetName == name) {
             assets->removeAt(c);
             break;
-            //Market not taken into consideration yet. Mistake???
         }
     }
 }

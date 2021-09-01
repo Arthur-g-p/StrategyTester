@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     sb = statusBar();
     stockdata *sd = stockdata::getInstance();
+    connect(ui->tableWidget, &QTableWidget::cellDoubleClicked, this, &MainWindow::cellDoubleClicked);
     sb->showMessage("downloading...");
 }
 
@@ -26,10 +27,7 @@ void MainWindow::fillMainTable()
     stockdata *sd = stockdata::getInstance();
     QVector<QVector<dataframe>> *asset_values = sd->getDataframes();
 
-    apicall testCall("demo", "BTC", "USD", "tbd");
-
     ui->tableWidget->setColumnCount(3);
-    ui->tableWidget->setRowCount(2);
     QStringList headers;
     headers <<"Asset Name"<<"Todays price"<<"Percent since yesterday";
     ui->tableWidget->setHorizontalHeaderLabels(headers);
@@ -39,10 +37,20 @@ void MainWindow::fillMainTable()
     {
         rowCount++;
         ui->tableWidget->setRowCount(rowCount);
-        ui->tableWidget->setItem(c,2,new QTableWidgetItem("BR"));
-        ui->tableWidget->setItem(c,1,new QTableWidgetItem(sd->getDataframes()->at(c).at(0).open_price)); //sd->getDataframes()->at(c).at(0).time));
-        ui->tableWidget->setItem(c,0,new QTableWidgetItem(assets->at(c).name+"/"+assets->at(c).market));
+        ui->tableWidget->setItem(c, 2, new QTableWidgetItem("..."));
+
+        if(c < asset_values->size()) {
+            ui->tableWidget->setItem(c,1,new QTableWidgetItem(QString::number(asset_values->at(c).at(0).open_price)));
+            ui->tableWidget->setItem(c,0,new QTableWidgetItem(assets->at(c).name+"/"+assets->at(c).market));
+        } else {
+            ui->tableWidget->setItem(c,1,new QTableWidgetItem("downloading..."));
+            ui->tableWidget->setItem(c,0,new QTableWidgetItem(assets->at(c).name+"/"+assets->at(c).market));
+        }
+        if(assets->size() == asset_values->size()) {
+            sb->showMessage("download complete");
+        }
     }
+    //SelectedRow = ui->MYQTableViewWidget->selectedItems().at(row)->data(col).toString();
     //this->setCentralWidget(ui->textField);
     //this->setCentralWidget(ui->graphicsView);
     //stockdata::getInstance();
@@ -59,6 +67,20 @@ void MainWindow::on_actionAdd_Asset_triggered()
     newWin->show();
 }
 
+void MainWindow::cellDoubleClicked(int row, int column)
+{
+
+    qInfo() << "open chart..";
+    settingsManager *sm = settingsManager::getInstance();
+    QVector<asset> *assets = sm->getAssets();
+    stockdata *sd = stockdata::getInstance();
+    QVector<QVector<dataframe>> *asset_values = sd->getDataframes();
+    if(row < asset_values->size()) {
+        chartWin = new chartwindow(nullptr, assets->at(row).name+"/"+assets->at(row).market, row);
+        chartWin->show();
+    }
+    sb->showMessage("not availabe yet...");
+}
 
 MainWindow::~MainWindow()
 {

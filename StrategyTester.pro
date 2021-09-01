@@ -14,6 +14,7 @@ SOURCES += \
     Sources/add_asset.cpp \
     Sources/apicall.cpp \
     Sources/charts.cpp \
+    Sources/chartwindow.cpp \
     Sources/main.cpp \
     Sources/mainwindow.cpp \
     Sources/settingsmanager.cpp \
@@ -25,6 +26,7 @@ HEADERS += \
     Headers/add_asset.h \
     Headers/apicall.h \
     Headers/charts.h \
+    Headers/chartwindow.h \
     Headers/mainwindow.h \
     Headers/observer.h \
     Headers/settingsmanager.h \
@@ -34,6 +36,7 @@ HEADERS += \
 
 FORMS += \
     Forms/add_asset.ui \
+    Forms/chartwindow.ui \
     Forms/mainwindow.ui
 
 # Default rules for deployment.

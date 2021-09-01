@@ -27,7 +27,6 @@ private:
     void requestAsset(QString assetName, QString market, QString function);
 private slots:
     void readyread(QNetworkReply *reply);
-    void encrypted(QNetworkReply *reply);
 };
 
 #endif // APICALL_H

@@ -2,15 +2,11 @@
 #define MAINWINDOW_H
 
 #include "stockdata.h"
-#include "charts.h"
 #include "settingsmanager.h"
 #include "add_asset.h"
 #include "ui_mainwindow.h"
+#include "chartwindow.h"
 
-#include <QLineSeries>
-#include <QChartView>
-#include <QCategoryAxis>
-#include <QChart>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
@@ -32,13 +28,15 @@ public:
 private:
     Ui::MainWindow *ui;
     add_asset *newWin;
+    chartwindow *chartWin;
     QStatusBar *sb;
     void initTable();
     void fillMainTable();
-    //instancees of stockdata has do be saved on the heap otherwise the slots get deleted if they lose the scope
+    //instancees of stockdata has do be saved on the heap otherwise the slots get deleted when they lose the scope
 
 
 private slots:
     void on_actionAdd_Asset_triggered();
+    void cellDoubleClicked(int row, int column);
 };
 #endif // MAINWINDOW_H
