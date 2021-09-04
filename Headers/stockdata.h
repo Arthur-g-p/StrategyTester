@@ -5,6 +5,8 @@
 #include <QString>
 #include <QVector>
 #include <QTimer>
+#include <QFile>
+#include <QDataStream>
 #include "settingsmanager.h"
 #include "apicall.h"
 

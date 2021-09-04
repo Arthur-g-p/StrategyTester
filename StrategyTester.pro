@@ -13,26 +13,26 @@ CONFIG += c++11
 SOURCES += \
     Sources/add_asset.cpp \
     Sources/apicall.cpp \
-    Sources/charts.cpp \
     Sources/chartwindow.cpp \
     Sources/main.cpp \
     Sources/mainwindow.cpp \
     Sources/settingsmanager.cpp \
     Sources/status.cpp \
     Sources/stockdata.cpp \
-    Sources/subject.cpp
+    Sources/subject.cpp \
+    Sources/addtab.cpp
 
 HEADERS += \
     Headers/add_asset.h \
     Headers/apicall.h \
-    Headers/charts.h \
     Headers/chartwindow.h \
     Headers/mainwindow.h \
     Headers/observer.h \
     Headers/settingsmanager.h \
     Headers/status.h \
     Headers/stockdata.h \
-    Headers/subject.h
+    Headers/subject.h \
+    Headers/addtab.h
 
 FORMS += \
     Forms/add_asset.ui \

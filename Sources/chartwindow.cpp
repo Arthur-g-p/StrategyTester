@@ -22,14 +22,12 @@ chartwindow::chartwindow(QWidget *parent, QString title, int row) :
     //Access error not checked
     QCategoryAxis *axisX = new QCategoryAxis();
     for(int c = 0; c < asset_values->at(row).size(); c++) {
-        //series->append(c, asset_values->at(row).at(c).close_price);
         float a = asset_values->at(row).at(c).close_price;
-        QString b = asset_values->at(row).at(c).time;
-        //axisX->append(asset_values->at(row).at(c).time, c);
         series->append(c, a);
     }
-
-
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setLabelFormat("%.2f");
+    axisY->setTitleText("USD");
     /*
     series->append(0, 1);
     series->append(1, 2);
@@ -45,6 +43,8 @@ chartwindow::chartwindow(QWidget *parent, QString title, int row) :
         axisX->append(b, c);
     }
     axisX->setTitleText("Date");
+    axisX->setTitleVisible(true);
+    axisX->setTickCount(10);
     //QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(QChart::ChartThemeQt)>QChart::ChartThemeQt;
     /*
     QDateTimeAxis *axisX_time = new QDateTimeAxis;
@@ -57,12 +57,13 @@ chartwindow::chartwindow(QWidget *parent, QString title, int row) :
 
     chart->createDefaultAxes();
     chart->addSeries(series);
-    //chart->setAxisX(axisX, series);
+    chart->addAxis(axisY, Qt::AlignBottom);
+    chart->setAxisX(axisX, series);
     chart->legend()->show();
     chart->setAnimationOptions(QChart::AllAnimations);
     chartView = new QChartView(chart, ui->chart_widget);
     chartView->setRubberBand(QChartView::HorizontalRubberBand);
-    chartView->chart()->setTheme(QChart::ChartThemeBlueIcy);
+    chartView->chart()->setTheme(QChart::ChartThemeBlueCerulean);
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->resize(ui->chart_widget->size());
 }

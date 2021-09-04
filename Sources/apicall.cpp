@@ -13,11 +13,6 @@ void apicall::attach(stockdata *observer)
     observerMember = observer;
 }
 
-void apicall::dettach(stockdata *observer)
-{
-    //observers->remove(*observer);
-}
-
 void apicall::notify(QString message)
 {
     if(observerMember != NULL)

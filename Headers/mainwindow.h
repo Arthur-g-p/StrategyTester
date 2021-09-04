@@ -6,11 +6,11 @@
 #include "add_asset.h"
 #include "ui_mainwindow.h"
 #include "chartwindow.h"
+#include "addtab.h"
 
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
-#include <QTableView>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,9 +34,9 @@ private:
     void fillMainTable();
     //instancees of stockdata has do be saved on the heap otherwise the slots get deleted when they lose the scope
 
-
 private slots:
     void on_actionAdd_Asset_triggered();
-    void cellDoubleClicked(int row, int column);
+    void on_tabWidget_currentChanged(int index);
+    void on_actionAdd_Strategy_triggered();
 };
 #endif // MAINWINDOW_H
