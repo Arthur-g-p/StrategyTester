@@ -9,8 +9,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("Strategy Tester");
     sb = statusBar();
-    stockdata::getInstance();       //To initzialize
+    stockdata::getInstance();               //To initzialize
     sb->showMessage("downloading...");
+
+    ui->tabWidget->addTab(new addtab(), "No Strategy");
 }
 
 void MainWindow::on_actionAdd_Asset_triggered()

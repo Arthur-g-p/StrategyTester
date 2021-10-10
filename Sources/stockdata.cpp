@@ -37,11 +37,7 @@ void stockdata::downloadAllAssets()
  */
 QVector<QVector<dataframe>>* stockdata::getDataframes()
 {
-    if(dataframes->empty()) {
-        return 0;
-    } else {
-        return dataframes;
-    }
+    return dataframes;
 }
 
 /*!

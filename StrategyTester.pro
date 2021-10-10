@@ -15,29 +15,35 @@ SOURCES += \
     Sources/apicall.cpp \
     Sources/chartwindow.cpp \
     Sources/main.cpp \
+    Sources/maintable.cpp \
     Sources/mainwindow.cpp \
     Sources/settingsmanager.cpp \
     Sources/status.cpp \
     Sources/stockdata.cpp \
     Sources/subject.cpp \
-    Sources/addtab.cpp
+    Sources/addtab.cpp \
+    Sources/strategy.cpp
 
 HEADERS += \
     Headers/add_asset.h \
     Headers/apicall.h \
     Headers/chartwindow.h \
+    Headers/maintable.h \
     Headers/mainwindow.h \
     Headers/observer.h \
     Headers/settingsmanager.h \
     Headers/status.h \
     Headers/stockdata.h \
     Headers/subject.h \
-    Headers/addtab.h
+    Headers/addtab.h \
+    Headers/strategy.h
 
 FORMS += \
+    Forms/Strategy.ui \
     Forms/add_asset.ui \
     Forms/chartwindow.ui \
-    Forms/mainwindow.ui
+    Forms/mainwindow.ui \
+    Forms/moneyManagement.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

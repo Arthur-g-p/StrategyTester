@@ -30,9 +30,7 @@ private:
     add_asset *newWin;
     chartwindow *chartWin;
     QStatusBar *sb;
-    void initTable();
-    void fillMainTable();
-    //instancees of stockdata has do be saved on the heap otherwise the slots get deleted when they lose the scope
+    //instances of stockdata has do be saved on the heap otherwise the slots get deleted when they lose the scope
 
 private slots:
     void on_actionAdd_Asset_triggered();
