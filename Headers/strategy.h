@@ -33,3 +33,12 @@ private:
 };
 
 #endif // STRATEGY_H
+
+
+/* Ideas
+ * -Ribbons for consecutive selling
+ *
+ *
+ *
+ *
+ * */

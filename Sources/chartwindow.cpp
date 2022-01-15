@@ -15,6 +15,9 @@ chartwindow::chartwindow(QWidget *parent, QString title, int row) :  //Make a ca
     stockdata *sd = stockdata::getInstance();
     QVector<QVector<dataframe>> *asset_values = sd->getDataframes();
     QVector<dataframe> dataframes = asset_values->at(row);          //To not to play with the pointer this much and to be able to reverse it
+    ui->minTextEdit->setPlainText("0");
+    ui->maxTextEdit->setPlainText(QString::number(dataframes.length()));
+    ui->maxTextLabel->setText("max:" +QString::number(dataframes.length()));
 
     std::reverse(dataframes.begin(), dataframes.end());             //revert it for better access
 
@@ -342,6 +345,7 @@ QVector<float> chartwindow::simpleMovingAverage(unsigned short number, const QVe
     }
     return movingAverage;
 }
+
 void chartwindow::on_performanceTable_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {
     Q_UNUSED(currentColumn);
@@ -355,6 +359,12 @@ void chartwindow::on_performanceTable_currentCellChanged(int currentRow, int cur
     seriesHighlight->remove(pOldSell);
     seriesHighlight->remove(pOld);
 }
+
+void chartwindow::on_recalculateButton_clicked()
+{
+
+}
+
 
 chartwindow::~chartwindow()
 {
@@ -372,3 +382,4 @@ Ideas:
                 draw a point with qimage
             I think both underlie the same method
  * */
+

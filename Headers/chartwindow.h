@@ -29,6 +29,7 @@ public:
 
 private slots:
     void on_performanceTable_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+    void on_recalculateButton_clicked();
 
 private:
     Ui::chartwindow *ui;

@@ -60,6 +60,10 @@ void stockdata::update(QString message)     //Also check if there is a connectio
         currentAssetApiCallIndex -=1;
         return;
     }
+    else if(message.isEmpty()) {
+        qInfo("No internet connection");
+        return;
+    }
     else {
         decodeCorrectReply(message);
     }
