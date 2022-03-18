@@ -12,7 +12,9 @@ CONFIG += c++11
 
 SOURCES += \
     Sources/add_asset.cpp \
+    Sources/addstrategy.cpp \
     Sources/apicall.cpp \
+    Sources/benchmark.cpp \
     Sources/chartwindow.cpp \
     Sources/main.cpp \
     Sources/maintable.cpp \
@@ -26,6 +28,7 @@ SOURCES += \
 
 HEADERS += \
     Headers/add_asset.h \
+    Headers/addstrategy.h \
     Headers/apicall.h \
     Headers/chartwindow.h \
     Headers/maintable.h \
@@ -36,14 +39,16 @@ HEADERS += \
     Headers/stockdata.h \
     Headers/subject.h \
     Headers/addtab.h \
-    Headers/strategy.h
+    Headers/strategy.h \
+    Headers/benchmark.h
 
 FORMS += \
-    Forms/Strategy.ui \
     Forms/add_asset.ui \
+    Forms/addstrategy.ui \
     Forms/chartwindow.ui \
     Forms/mainwindow.ui \
-    Forms/moneyManagement.ui
+    Forms/moneyManagement.ui \
+    Forms/strategy.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

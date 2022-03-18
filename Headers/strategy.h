@@ -12,23 +12,26 @@ struct signalPoints {
 class strategy
 {
 public:
-    strategy(unsigned short number, const QVector<dataframe> *data);
+    struct sma {
+        QVector<float> data;
+        unsigned int number;
+        unsigned int offset;
+        bool readyToUse;
+    };
+
+    strategy(QString strategyName, unsigned int number);
     QVector<float>* getData(QVector<float>* data);
-    signalPoints getSignals(const QVector<dataframe> *data);
+    sma &getMainSma(const QVector<dataframe> *data = nullptr, bool override_data = false);
 private:
     enum strategyType { simpleCrossWithChart, CrossWithObject };
     struct strategyInfo {
         strategyType type;
     };
-    struct sma {
-        QVector<float> data;
-        unsigned int number;
-        unsigned int offset;
-    };
 
     sma mainSma;
     strategyInfo type;
-    sma simpleMovingAverage(const unsigned short number, const QVector<dataframe> *data);
+    QString strategyName;
+    sma simpleMovingAverage(const QVector<dataframe> *data, unsigned int number = NULL);
     //QVector<float> exponentialMovingAverage(const unsigned short number, const QVector<dataframe> *data);
 };
 

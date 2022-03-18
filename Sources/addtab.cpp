@@ -1,14 +1,11 @@
 #include "./Headers/addtab.h"
 
-addtab::addtab(QWidget *parent)
+addtab::addtab(strategy *tableStrategyPtr, QWidget *parent)
 {
-    //maintable();
-    tableWidget = new QTableWidget;
-    connect(tableWidget, &QTableWidget::cellDoubleClicked, this, &addtab::cellDoubleClicked);
-    createStandardTable();
-    //additonal:
-    addHorizontalHeaderLabel("drawdown");
+    Q_UNUSED(parent)
+    tabtable = new maintable(tableStrategyPtr, parent);
+
     QVBoxLayout *mainlayout = new QVBoxLayout;
-    mainlayout->addWidget(tableWidget);
+    mainlayout->addWidget(tabtable->getTableWidget());
     setLayout(mainlayout);
 }

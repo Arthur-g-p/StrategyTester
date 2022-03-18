@@ -2,12 +2,6 @@
 
 #include <QApplication>
 
-#include <QtCharts/QLineSeries>
-#include <QtCharts>
-#include <QtCharts/QChartView>
-#include <QtCharts/QLegend>
-#include <QtCharts/QCategoryAxis>
-
 //QT_CHARTS_USE_NAMESPACE
 
 int main(int argc, char *argv[])

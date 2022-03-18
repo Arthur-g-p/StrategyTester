@@ -7,6 +7,8 @@
 #include "ui_mainwindow.h"
 #include "chartwindow.h"
 #include "addtab.h"
+#include "status.h"
+#include "addstrategy.h"
 
 #include <QMainWindow>
 #include <QMessageBox>
@@ -27,7 +29,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    add_asset *newWin;
+    add_asset *newAssetWin;
+    addStrategy *newStrategyWin;
     chartwindow *chartWin;
     QStatusBar *sb;
     //instances of stockdata has do be saved on the heap otherwise the slots get deleted when they lose the scope

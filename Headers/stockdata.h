@@ -7,6 +7,9 @@
 #include <QTimer>
 #include <QFile>
 #include <QDataStream>
+#include <QFile>
+#include <QMap>
+#include <QQueue>
 #include "settingsmanager.h"
 #include "apicall.h"
 
@@ -24,27 +27,45 @@ class stockdata : public QObject
 private:
     static stockdata* instance;
     stockdata();
-    QString currentAssetApiCall;
+    QString currentAssetApiCallName;
+    QString currentAssetApiCallMarket;
+    QString currentAssetApiCallFunction;
     unsigned short currentAssetApiCallIndex;
+    QString apiKey;
+
     unsigned short invalidCalls;
     QVector<QVector<dataframe>> *dataframes;
-    void decodeCorrectReply(QString reply);
-public:
-    stockdata(const stockdata&) = delete;
+    QMap<QString, QPair<QVector<dataframe>, bool>> *stockDataMapPair; //The bool is added to ask if the data has been downloaded
 
+    QQueue<QString> pendingAssetApiCallName;
+    QQueue<QString> pendingAssetApiCallMarket;
+    QQueue<QString> pendingAssetApiCallFunction;
+
+    bool readFromCsv(const QString asset, const QString market);
+    bool decodeCorrectReply(QString reply, const QString assetName = "", const QString assetMarket = "", const QString assetIndex = "");
+    void saveToCsv(QString reply, const QString assetName = "", const QString assetMarket = "");
+    void apiCall(const QString customApiCallName = "", const QString customAssetApiCallMarket = "", const QString customAssetApiCallFunction = "");
+
+public:
+    stockdata(const stockdata&) = delete; //Singleton must-have?
     static stockdata* getInstance();
     typedef enum {
         DIGITAL_CURRENCY_DAILY,
         DIGITAL_CURRENCY_WEEKLY
     } api_function;
 
-     QVector<QVector<dataframe>>* getDataframes();
+    QVector<QVector<dataframe>>* getDataframes();
 
-     void downloadAllAssets();
-     void update(QString message);
+    void downloadAllAssets();
+    void update(QString message, const QString assetName, const QString assetMarket, const QString assetIndex);     //This is a function that gets called from apicall. Callback
 
+
+    QList<QString> getAllKeys() const;
+    QPair<QVector<dataframe>, bool> getAssetByNamePair(const QString asset, const QString market);
+    QPair<QVector<dataframe>, bool> getAssetByNamePair(const QString assetAndMarket); //function overload
+    void nextAsset();
 private slots:
-    void nextApiCall();
+    void pendingApiCall();
 };
 
 #endif // STOCKDATA_H

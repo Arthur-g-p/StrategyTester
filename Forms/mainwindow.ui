@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>616</width>
-    <height>462</height>
+    <width>914</width>
+    <height>464</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>611</width>
+      <width>911</width>
       <height>431</height>
      </rect>
     </property>
@@ -39,7 +39,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>-1</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideRight</enum>
@@ -63,7 +63,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>616</width>
+     <width>914</width>
      <height>30</height>
     </rect>
    </property>
@@ -83,7 +83,7 @@
   </action>
   <action name="actionAdd_Strategy">
    <property name="text">
-    <string>Add Strategy?</string>
+    <string>Add Strategy</string>
    </property>
   </action>
  </widget>

@@ -1,39 +1,32 @@
 #include "./Headers/strategy.h"
 
-strategy::strategy(unsigned short number, const QVector<dataframe> *data)
+strategy::strategy(QString strategyName, unsigned int number)
 {
-    mainSma = simpleMovingAverage(number, data);
+    this->strategyName = strategyName;
+    if (number <= 0) {
+        number = 20;
+    }
+    mainSma.readyToUse = false;
+    mainSma.number = number;
 }
 
-signalPoints strategy::getSignals(const QVector<dataframe> *data)
+strategy::sma &strategy::getMainSma(const QVector<dataframe> *data, bool override_data)
 {
-    signalPoints signalPoints;
-    //Simple Chart Cross:
-    bool maLower;
-    for(int c = mainSma.offset; c < mainSma.data.size()+mainSma.offset; c++) {            //C is the global index
-        if(mainSma.data.at(c-mainSma.offset) < data->at(c).close_price) {
-            if(!maLower) {
-                maLower = true;
-                if(c+1 < data->size()) {
-                    signalPoints.value.append(data->at(c+1).open_price);
-                    signalPoints.indices.append(c);
-                }
-            }
-        } else {
-            if(maLower) {
-                maLower = false;
-                if(c+1 < data->size()) {
-                    signalPoints.value.append(data->at(c+1).open_price);
-                    signalPoints.indices.append(c);
-                }
-            }
+    //override_data needs to be true when benchmarking another dataset
+    if (!mainSma.readyToUse || override_data == true) {
+        if (data) {
+            mainSma = simpleMovingAverage(data);
         }
     }
-    return signalPoints;
+    return mainSma;
 }
 
-strategy::sma strategy::simpleMovingAverage(unsigned short number, const QVector<dataframe> *data)
+
+strategy::sma strategy::simpleMovingAverage(const QVector<dataframe> *data, unsigned int number)
 {
+    if (number == NULL) { //This means calculate with the current number given
+        number = mainSma.number;      //es fehlt eine Abfage ob die nummer nicht zu groß ist
+    }
     sma movingAverage;
     movingAverage.number = number;
     movingAverage.offset = number-1;
@@ -46,6 +39,7 @@ strategy::sma strategy::simpleMovingAverage(unsigned short number, const QVector
         float average = sum/(movingAverage.number);
         movingAverage.data.append(average);
     }
+    movingAverage.readyToUse = true;
     return movingAverage;
 }
 

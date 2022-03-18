@@ -7,6 +7,7 @@
 
 #include <QWidget>
 #include <QVBoxLayout>
+#include <string>
 #include <QTableWidget>
 
 
@@ -14,15 +15,18 @@ class maintable : public QWidget
 {
     Q_OBJECT
 public:
-    explicit maintable(QWidget *parent = nullptr);
+    maintable(strategy *tableStrategyPtr, QWidget *parent = nullptr);  //Default parameters have to come at the last place
+    void benchmarkAll();
+    QTableWidget* getTableWidget();
     ~maintable() {};
-
-protected:
+private:
+    strategy *tableStrategy;
     QTableWidget *tableWidget;
     QStringList headers;
     void addHorizontalHeaderLabel(QString headerLabel);
     void createStandardTable();
-protected slots:
+
+private slots:
     void cellDoubleClicked(int row, int column);
 };
 

@@ -146,7 +146,7 @@
      </row>
      <row>
       <property name="text">
-       <string>Percentage Gain</string>
+       <string>Average Outcome</string>
       </property>
      </row>
      <row>
@@ -169,6 +169,19 @@
        <string>Short</string>
       </property>
      </column>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>320</y>
+       <width>211</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>A.O.: Win hoch: große Trades Lose hoch: möglicherweise macht ein Cut sinn.</string>
+     </property>
     </widget>
    </widget>
   </widget>

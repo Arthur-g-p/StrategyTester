@@ -1,26 +1,32 @@
 #include "./Headers/chartwindow.h"
 
-chartwindow::chartwindow(QWidget *parent, QString title, int row) :  //Make a calculation only option for queing
+chartwindow::chartwindow(strategy *strat, QString title, int row, QWidget *parent) :  //Make a calculation only option for queing
     QWidget(parent),
     ui(new Ui::chartwindow)
 {
+    this->strategyPtr = strat;
     ui->setupUi(this);
+    if (strategyPtr == nullptr) {
+        this->setWindowTitle(title+" without Strategy");
+    }
+    this->setWindowTitle(title);
+    benchmarkWithChart(title, row);
+}
 
+void chartwindow::benchmarkWithChart(QString title, int row)
+{
     QLineSeries *series = new QLineSeries();
     QCategoryAxis *axisX = new QCategoryAxis();
     QPen pen(QRgb(0x000000));
     QChart *chart = new QChart();
-    chart->setTitle(title);
+
 
     stockdata *sd = stockdata::getInstance();
-    QVector<QVector<dataframe>> *asset_values = sd->getDataframes();
-    QVector<dataframe> dataframes = asset_values->at(row);          //To not to play with the pointer this much and to be able to reverse it
+    QPair<QVector<dataframe>, bool> asset = sd->getAssetByNamePair(title);
+    QVector<dataframe> dataframes = asset.first;          //To not to play with the pointer this much and to be able to reverse it
     ui->minTextEdit->setPlainText("0");
     ui->maxTextEdit->setPlainText(QString::number(dataframes.length()));
     ui->maxTextLabel->setText("max:" +QString::number(dataframes.length()));
-
-    std::reverse(dataframes.begin(), dataframes.end());             //revert it for better access
-
     seriesOpen = new QScatterSeries();
     seriesClose = new QScatterSeries();
     seriesHighlight = new QScatterSeries();
@@ -60,51 +66,56 @@ chartwindow::chartwindow(QWidget *parent, QString title, int row) :  //Make a ca
     }
     axisX->setTitleText("Date");
     axisX->setTitleVisible(true);
-    int tick = asset_values->at(row).size()/10;
+    //int tick = asset_values->at(row).size()/10;
     axisX->setTickCount(100);
     axisX->setStartValue(4);
     //axisX->setLabelsPosition(QCategoryAxis::AxisLabelsPositionOnValue);
     axisX->setLabelsAngle(90);
     //axisX->append("one year", 52);
 
-    QLineSeries *seriesTwo = new QLineSeries();
-    seriesTwo->setName("50 SMA");
-    QVector<float> moving_average = simpleMovingAverage(50, &dataframes);   //No error check if SMA is bigger than size
-    seriesTwo->append(0, 0);
-    for(int c = 49; c < moving_average.size()+49; c++) {
-        seriesTwo->append(c, moving_average.at(c-49));
-    }
-    seriesTwo->append(moving_average.size()+49, maximumValue);
-
-
-    strategy strategy(50, &dataframes);
-    signalPoints allSignals = strategy.getSignals(&dataframes);
-
-    bool open = false;
-    for(int c = 0; c < allSignals.indices.size(); c++) {
-        if(open) {     //If in long -> close pos with result
-            //calc
-            open = false;
-            seriesClose->append(allSignals.indices.at(c), allSignals.value.at(c));
-        } else {        //If not in pos -> open pos
-            open = true;
-            seriesOpen->append(allSignals.indices.at(c), allSignals.value.at(c));
+    QLineSeries *seriesTwo;
+    strategy::sma primaryMovingAverage;
+    //Overrides the data and gets the current moving average
+    if (strategyPtr != nullptr) {
+        primaryMovingAverage = strategyPtr->getMainSma(&dataframes, true);
+        //Draws the SMA from the Strategy
+        seriesTwo = new QLineSeries();
+        QString movingAverageStr = QString::number(primaryMovingAverage.number);
+        seriesTwo->setName(movingAverageStr+" SMA");
+        seriesTwo->append(0, 0);
+        //that is bad to many calls.
+        for(int c = primaryMovingAverage.offset; c < primaryMovingAverage.data.size()+primaryMovingAverage.offset; c++) {
+            seriesTwo->append(c, primaryMovingAverage.data.at(c-primaryMovingAverage.offset));
         }
+        seriesTwo->append(primaryMovingAverage.data.size()+primaryMovingAverage.offset, maximumValue);
+
+        benchmark bench;
+        signalPoints allSignals = bench.getSignals(*strategyPtr, &dataframes);
+
+        bool open = false;
+        for(int c = 0; c < allSignals.indices.size(); c++) {
+            if(open) {     //If in long -> close pos with result
+                //calc
+                open = false;
+                seriesClose->append(allSignals.indices.at(c), allSignals.value.at(c));
+            } else {        //If not in pos -> open pos
+                open = true;
+                seriesOpen->append(allSignals.indices.at(c), allSignals.value.at(c));
+            }
+        }
+        fillTradesList(allSignals);
     }
-    fillTradesList(allSignals);
-    //seriesClose->append(allSignals.indices.last(), allSignals.value.last());
 
-
-    //QList<QAbstractAxis*> axisY = chart->axes(Qt::Vertical);
-    //axisY.at(0)->setRange(0, maximumValue); //crashes
     chart->addSeries(seriesClose);
     chart->addSeries(seriesOpen);
     chart->addSeries(seriesHighlight);
     chart->createDefaultAxes();
     chart->addSeries(series);
-    chart->addSeries(seriesTwo);
+    if (strategyPtr != nullptr) {
+        chart->addSeries(seriesTwo);
+        chart->setAxisX(axisX, seriesTwo);
+    }
     chart->setAxisX(axisX, series);
-    chart->setAxisX(axisX, seriesTwo);
     //chart->legend()->show();
     chart->setAnimationOptions(QChart::AllAnimations);
     chartView = new QChartView(chart, ui->chart_widget);
@@ -118,8 +129,10 @@ chartwindow::chartwindow(QWidget *parent, QString title, int row) :  //Make a ca
     seriesClose->remove(0,0);
     seriesOpen->remove(0,0);
     series->remove(0, 0);
-    seriesTwo->remove(0, 0);
-    seriesTwo->remove(moving_average.size()+49,maximumValue);
+    if (strategyPtr != nullptr) {
+        seriesTwo->remove(0, 0);
+        seriesTwo->remove(primaryMovingAverage.data.size()+primaryMovingAverage.offset, maximumValue);
+    }
     seriesClose->remove(dataframes.size(),maximumValue);
     seriesOpen->remove(dataframes.size(),maximumValue);
     seriesHighlight->remove(dataframes.size(),maximumValue);
@@ -130,16 +143,21 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
 {
     QLineSeries *series = new QLineSeries();
     QLineSeries *series_index = new QLineSeries();
+    QLineSeries *portfolio = new QLineSeries();
 
-    bool shorting = true;
+    bool shorting = false;
     bool longing = true;
     float capital = 100.0;
+
     bool open = false;
     bool openShort = false;
     float openPos = 0.0;
+
+    portfolio->append(0,capital);
     series->append(0, capital);
     series_index->append(0, capital);
     int rowCount = ui->performanceTable->rowCount();
+
     for(int c = 0; c < allSignals.value.size(); c++) {
         if(open) {     //If in long -> close pos with result -> open short
             open = false;
@@ -147,7 +165,7 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
                 float changePercent = allSignals.value.at(c)/openPos;
                 capital*=changePercent;
                 if(changePercent <= 1.0) { //save results from long pos
-                    changePercent = (1-changePercent)*100.0;
+                    changePercent = (1-changePercent)*100.0; //wrong calc?
                     ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
                     ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(255, 0, 0)));
                 } else {
@@ -198,10 +216,14 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
                 ui->performanceTable->setItem(rowCount-1, 0, new QTableWidgetItem("Long"));
             }
             //update chart
+            portfolio->append(c, capital);
             series->append(c, capital);
             series_index->append(allSignals.indices.at(c), capital);
         }
     }
+
+    // In order to get the drawdown, drawup etc, I surley need the stockdata.
+
     qInfo() << "final capital" <<  QString::number(capital);
     series->append(allSignals.value.size(), capital);
     if(!allSignals.indices.isEmpty()) {
@@ -211,6 +233,7 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
     QChart *chart = new QChart();
     chart->addSeries(series);
     chart->addSeries(series_index);
+    chart->addSeries(portfolio);
     //chart->addSeries(seriesClose);
     //chart->addSeries(seriesOpen);
     //chart->addSeries(seriesHighlight);
@@ -224,12 +247,14 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
     fillDetails(allSignals);
 }
 
+
 void chartwindow::fillDetails(const signalPoints allSignals)
 {
+    bool shorting = false;
+    bool longing = true;
+
     bool open = false;
     bool openShort = false;
-    bool shorting = true;
-    bool longing = true;
     float openPos = 0.0;
     float startingCapital = 100.0;
     float capital = startingCapital;
@@ -239,7 +264,7 @@ void chartwindow::fillDetails(const signalPoints allSignals)
     int longWin = 0;
     int longLose = 0;
     //Compare to Buy and hold
-    for(int c = 0; c < allSignals.value.size(); c++) {
+    for(int c = 0; c < allSignals.value.size(); c++) {  //Counts wins and losses
         if(open) {     //If in long -> close pos with result
             //calc
             open = false;
@@ -271,6 +296,7 @@ void chartwindow::fillDetails(const signalPoints allSignals)
             }
         }
     }
+
     //Wins and loses
     ui->detailsTable->setItem(0, 0, new QTableWidgetItem(QString::number(longWin+shortWin)));
     ui->detailsTable->setItem(1, 0, new QTableWidgetItem(QString::number(shortLose+shortLose)));
@@ -310,21 +336,20 @@ void chartwindow::fillDetails(const signalPoints allSignals)
 
     //buy and hold comparison
     if(!allSignals.value.isEmpty()) {
-        float change = allSignals.value.last()/allSignals.value.at(0);
+        float change = allSignals.value.last()/allSignals.value.at(0);  //Das ist nicht der letzte wert sondern nur das letzte Signal
         ui->detailsTable->setItem(4, 0, new QTableWidgetItem("+"+QString().setNum(change, 'g', 3)));
     }
-    {
-        float changePercent = capital/startingCapital;
-        if(changePercent <= 1.0) {
-           changePercent = (1-changePercent)*100.0;
-           ui->detailsTable->setItem(3, 0, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
-           ui->detailsTable->item(3, 0)->setForeground(QBrush(QColor(255, 0, 0)));
-        } else {
-           changePercent = (changePercent-1)*100.0;
-           ui->detailsTable->setItem(3, 0, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
-           ui->detailsTable->item(3, 0)->setForeground(QBrush(QColor(0, 255, 0)));
-        }
+    float changePercent = capital/startingCapital;  //endcapital is not given!
+    if(changePercent <= 1.0) {
+       changePercent = (1-changePercent)*100.0;
+       ui->detailsTable->setItem(3, 0, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
+       ui->detailsTable->item(3, 0)->setForeground(QBrush(QColor(255, 0, 0)));
+    } else {
+       changePercent = (changePercent-1)*100.0;
+       ui->detailsTable->setItem(3, 0, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
+       ui->detailsTable->item(3, 0)->setForeground(QBrush(QColor(0, 255, 0)));
     }
+
 }
 
 QVector<float> chartwindow::simpleMovingAverage(unsigned short number, const QVector<dataframe> *data)
@@ -362,9 +387,8 @@ void chartwindow::on_performanceTable_currentCellChanged(int currentRow, int cur
 
 void chartwindow::on_recalculateButton_clicked()
 {
-
+        //benchmarkWithChart();
 }
-
 
 chartwindow::~chartwindow()
 {

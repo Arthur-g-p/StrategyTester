@@ -24,6 +24,12 @@ private:
     stockdata *observerMember;
     QString api_key;
     const QString base_api = "https://www.alphavantage.co/query";
+
+    //Helping variables for stockdata
+    QString assetName;
+    QString market;
+    QString function;
+
     void requestAsset(QString assetName, QString market, QString function);
 private slots:
     void readyread(QNetworkReply *reply);
