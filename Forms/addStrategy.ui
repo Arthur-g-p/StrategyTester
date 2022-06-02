@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>431</width>
-    <height>354</height>
+    <width>875</width>
+    <height>608</height>
    </rect>
   </property>
   <property name="focusPolicy">
@@ -69,6 +69,11 @@
         <string>Exponential Moving Average</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>Relative Strength Index</string>
+       </property>
+      </item>
      </widget>
     </item>
     <item row="2" column="1">
@@ -108,7 +113,7 @@ p, li { white-space: pre-wrap; }
     <item row="1" column="0">
      <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>crosses with:</string>
+       <string>crosses with: (above)</string>
       </property>
      </widget>
     </item>

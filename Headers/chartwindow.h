@@ -25,7 +25,8 @@ class chartwindow : public QWidget
 
 public:
     QChartView *chartView = new QChartView;
-    explicit chartwindow(strategy *strat, QString title = "", int row = 0, QWidget *parent = nullptr);
+    QChartView *oscChartView = new QChartView;
+    explicit chartwindow(strategy *strat, QString title = "", QWidget *parent = nullptr);
     ~chartwindow();
 
 private slots:
@@ -40,11 +41,11 @@ private:
     QScatterSeries *seriesOpen;
     QScatterSeries *seriesClose;
     strategy *strategyPtr;
-    QVector<float> simpleMovingAverage(const unsigned short number, const QVector<dataframe> *data);
     void addHorizontalHeaderLabel(QString headerLabel);
-    void fillDetails(const signalPoints allSignals);
-    void fillTradesList(const signalPoints allSignals);
-    void benchmarkWithChart(QString title, int row);
+    void fillDetails(const signalPoints allSignals, const QVector<dataframe> *data);
+    void fillTradesList(const signalPoints allSignals, const QVector<dataframe> *data);
+    void benchmarkWithChart(QString title);
+    void getDrawDown(const QVector<dataframe> data, float &maximumDrawDown, float &maximumDrawUp) const;
 };
 
 #endif // CHARTWINDOW_H

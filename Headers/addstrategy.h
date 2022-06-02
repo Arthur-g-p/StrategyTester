@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTabWidget>
 #include "strategy.h"
+#include "strategycrossing.h"
 
 namespace Ui {
 class addStrategy;

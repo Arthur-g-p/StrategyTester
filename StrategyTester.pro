@@ -22,6 +22,7 @@ SOURCES += \
     Sources/settingsmanager.cpp \
     Sources/status.cpp \
     Sources/stockdata.cpp \
+    Sources/strategycrossing.cpp \
     Sources/subject.cpp \
     Sources/addtab.cpp \
     Sources/strategy.cpp
@@ -40,7 +41,8 @@ HEADERS += \
     Headers/subject.h \
     Headers/addtab.h \
     Headers/strategy.h \
-    Headers/benchmark.h
+    Headers/benchmark.h \
+    Headers/strategycrossing.h
 
 FORMS += \
     Forms/add_asset.ui \

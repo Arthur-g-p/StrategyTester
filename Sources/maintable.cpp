@@ -62,12 +62,12 @@ void maintable::createStandardTable()
             }
             if (asset.first.size() >= 2) {
                 //Price change since last period
-                float changePercent = ((asset.first.last().open_price / asset.first.at(asset.first.size()-1).open_price)-1)*100.0;
+                float changePercent = ((asset.first.last().open_price / asset.first.at(asset.first.size()-2).open_price)-1)*100.0;
                 if(changePercent <= 1.0) {
-                    tableWidget->setItem(rowCount-1, 2, new QTableWidgetItem(QString().setNum(changePercent, 'g', 2)+"%"));
+                    tableWidget->setItem(rowCount-1, 2, new QTableWidgetItem(QString().setNum(changePercent)+"%"));
                     tableWidget->item(rowCount-1, 2)->setForeground(QBrush(QColor(255, 0, 0)));
                 } else {
-                    tableWidget->setItem(rowCount-1, 2, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 2)+"%"));
+                    tableWidget->setItem(rowCount-1, 2, new QTableWidgetItem("+"+QString().setNum(changePercent)+"%"));
                     tableWidget->item(rowCount-1, 2)->setForeground(QBrush(QColor(0, 255, 0)));
                 }
             }
@@ -79,7 +79,7 @@ void maintable::createStandardTable()
             tableWidget->setItem(rowCount-1, 1, new QTableWidgetItem(QString().setNum(asset.first.last().open_price)));
 
             //Price change since last period
-            float changePercent = ((asset.first.last().open_price / asset.first.at(asset.first.size()-1).open_price)-1)*100.0;
+            float changePercent = ((asset.first.last().open_price / asset.first.at(asset.first.size()-2).open_price)-1)*100.0;
             if(changePercent <= 1.0) {
                 tableWidget->setItem(rowCount-1, 2, new QTableWidgetItem(QString().setNum(changePercent, 'g', 2)+"%"));
                 tableWidget->item(rowCount-1, 2)->setForeground(QBrush(QColor(255, 0, 0)));
@@ -170,19 +170,19 @@ void maintable::benchmarkAll()
             QTableWidgetItem *currentItem = tableWidget->item(rowCount, 5);
 
             //calculating the performance
-            tableStrategy->getMainSma(&asset.first, true);
+            tableStrategy->getIndicators(&asset.first, true);   //Inits the indicators because of the true
             benchmark bench;
-            signalPoints allSignals = bench.getSignals(*tableStrategy, &asset.first);
+            signalPoints allSignals = bench.getSignals(tableStrategy, &asset.first);
             float capital = bench.getPerformance(allSignals);
             currentItem->setText(QString::number(capital));
 
             //Strategyperformance
             float changePercent = ((capital/100.0)-1)*100.0;    //This 100.0 may change, its just the starting capital
             if(changePercent <= 1.0) {
-                tableWidget->setItem(rowCount, 6, new QTableWidgetItem(QString().setNum(changePercent, 'g', 2)+"%"));
+                tableWidget->setItem(rowCount, 6, new QTableWidgetItem(QString().setNum(changePercent)+"%"));
                 tableWidget->item(rowCount, 6)->setForeground(QBrush(QColor(255, 0, 0)));
             } else {
-                tableWidget->setItem(rowCount, 6, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 2)+"%"));
+                tableWidget->setItem(rowCount, 6, new QTableWidgetItem("+"+QString().setNum(changePercent)+"%"));
                 tableWidget->item(rowCount, 6)->setForeground(QBrush(QColor(0, 255, 0)));
             }
         }
@@ -234,7 +234,7 @@ void maintable::cellDoubleClicked(int row, int column)
     QString assetName = tableWidget->item(row,0)->text();       //Gets the asset name
     QPair<QVector<dataframe>, bool> asset = sd->getAssetByNamePair(assetName);
     if (asset.second) { //This means the asset is availabe
-        chartWin = new chartwindow(tableStrategy, assetName, row);
+        chartWin = new chartwindow(tableStrategy, assetName);
         chartWin->show();
     } else {
         qInfo() << "the data is not available yet";

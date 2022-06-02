@@ -1,6 +1,6 @@
 #include "./Headers/chartwindow.h"
 
-chartwindow::chartwindow(strategy *strat, QString title, int row, QWidget *parent) :  //Make a calculation only option for queing
+chartwindow::chartwindow(strategy *strat, QString title, QWidget *parent) :  //Make a calculation only option for queing
     QWidget(parent),
     ui(new Ui::chartwindow)
 {
@@ -8,25 +8,31 @@ chartwindow::chartwindow(strategy *strat, QString title, int row, QWidget *paren
     ui->setupUi(this);
     if (strategyPtr == nullptr) {
         this->setWindowTitle(title+" without Strategy");
+    } else {
+        this->setWindowTitle(title);
     }
-    this->setWindowTitle(title);
-    benchmarkWithChart(title, row);
+    benchmarkWithChart(title);
 }
 
-void chartwindow::benchmarkWithChart(QString title, int row)
+void chartwindow::benchmarkWithChart(QString title)
 {
     QLineSeries *series = new QLineSeries();
     QCategoryAxis *axisX = new QCategoryAxis();
     QPen pen(QRgb(0x000000));
+
     QChart *chart = new QChart();
+    QChart *oscChart = new QChart();
+
 
 
     stockdata *sd = stockdata::getInstance();
     QPair<QVector<dataframe>, bool> asset = sd->getAssetByNamePair(title);
-    QVector<dataframe> dataframes = asset.first;          //To not to play with the pointer this much and to be able to reverse it
+    QVector<dataframe> dataframes = asset.first;          //To not to play with the pointer
+
     ui->minTextEdit->setPlainText("0");
     ui->maxTextEdit->setPlainText(QString::number(dataframes.length()));
     ui->maxTextLabel->setText("max:" +QString::number(dataframes.length()));
+
     seriesOpen = new QScatterSeries();
     seriesClose = new QScatterSeries();
     seriesHighlight = new QScatterSeries();
@@ -41,11 +47,14 @@ void chartwindow::benchmarkWithChart(QString title, int row)
     seriesOpen->append(0,0);
     seriesClose->append(0,0);
     seriesHighlight->append(0,0);
+
     float maximumValue = 0.0;
     pen.setWidth(5);
     series->setPen(pen);
     //Set Y-Values
-    series->append(0, 0);
+    series->append(0, 0);       // Sets the dimensions of the chart
+
+    //gets the maximum value. It is important to set the dimensions of the chart
     for(int c = 0; c < dataframes.size(); c++) {
         float a = dataframes.at(c).close_price;
         series->append(c, a);
@@ -53,6 +62,7 @@ void chartwindow::benchmarkWithChart(QString title, int row)
             maximumValue = dataframes.at(c).close_price;
         }
     }
+
     seriesClose->append(dataframes.size(),maximumValue);
     seriesOpen->append(dataframes.size(),maximumValue);
     seriesHighlight->append(dataframes.size(),maximumValue);
@@ -73,25 +83,36 @@ void chartwindow::benchmarkWithChart(QString title, int row)
     axisX->setLabelsAngle(90);
     //axisX->append("one year", 52);
 
-    QLineSeries *seriesTwo;
-    strategy::sma primaryMovingAverage;
-    //Overrides the data and gets the current moving average
+    QVector<QLineSeries*> lineSeriesIndicators; //For indicators
+    QVector<indicator> allIndicators;
+    QLineSeries *currentSeries;
     if (strategyPtr != nullptr) {
-        primaryMovingAverage = strategyPtr->getMainSma(&dataframes, true);
-        //Draws the SMA from the Strategy
-        seriesTwo = new QLineSeries();
-        QString movingAverageStr = QString::number(primaryMovingAverage.number);
-        seriesTwo->setName(movingAverageStr+" SMA");
-        seriesTwo->append(0, 0);
-        //that is bad to many calls.
-        for(int c = primaryMovingAverage.offset; c < primaryMovingAverage.data.size()+primaryMovingAverage.offset; c++) {
-            seriesTwo->append(c, primaryMovingAverage.data.at(c-primaryMovingAverage.offset));
+        //Overrides the data and gets the current moving average
+        allIndicators = strategyPtr->getIndicators(&dataframes, true);
+        for (int c = 0; c < allIndicators.size(); c++) {
+            int parameter1 = allIndicators.at(c).parameter;
+            int offset = allIndicators.at(c).offset;
+
+            //Draws the indicator from the Strategy
+            currentSeries = new QLineSeries();
+            QString movingAverageStr = QString::number(parameter1);
+            currentSeries->setName(movingAverageStr+allIndicators.at(c).name);
+            currentSeries->append(0, 0);
+
+            //that is bad tOo many calls.
+            int maxIndex = allIndicators.at(c).data.size()+offset;
+            for(int i = offset; i < maxIndex; i++)
+            {
+                currentSeries->append(i, allIndicators.at(c).data.at(i-offset));
+            }
+            currentSeries->append(allIndicators.at(c).data.size()+offset, maximumValue);
+            lineSeriesIndicators.append(currentSeries);
         }
-        seriesTwo->append(primaryMovingAverage.data.size()+primaryMovingAverage.offset, maximumValue);
 
         benchmark bench;
-        signalPoints allSignals = bench.getSignals(*strategyPtr, &dataframes);
+        signalPoints allSignals = bench.getSignals(strategyPtr, &dataframes);
 
+        //These are the buy and sell signals
         bool open = false;
         for(int c = 0; c < allSignals.indices.size(); c++) {
             if(open) {     //If in long -> close pos with result
@@ -103,7 +124,8 @@ void chartwindow::benchmarkWithChart(QString title, int row)
                 seriesOpen->append(allSignals.indices.at(c), allSignals.value.at(c));
             }
         }
-        fillTradesList(allSignals);
+        //fillTradesList(allSignals, &dataframes);
+        // does not catch 0 trades!
     }
 
     chart->addSeries(seriesClose);
@@ -111,11 +133,20 @@ void chartwindow::benchmarkWithChart(QString title, int row)
     chart->addSeries(seriesHighlight);
     chart->createDefaultAxes();
     chart->addSeries(series);
-    if (strategyPtr != nullptr) {
-        chart->addSeries(seriesTwo);
-        chart->setAxisX(axisX, seriesTwo);
-    }
     chart->setAxisX(axisX, series);
+    if (strategyPtr != nullptr) {
+        for (int c = 0; c < lineSeriesIndicators.size(); c++) {
+            if (allIndicators[c].oscillator) {
+                oscChart->addSeries(lineSeriesIndicators[c]);
+                oscChart->setAxisX(axisX, lineSeriesIndicators[c]);
+                chartView = new QChartView(oscChart, ui->oscillator_chart_widget);
+                chartView->chart()->setTheme(QChart::ChartThemeBlueCerulean);
+            } else {
+                chart->addSeries(lineSeriesIndicators[c]);
+                chart->setAxisX(axisX, lineSeriesIndicators[c]);
+            }
+        }
+    }
     //chart->legend()->show();
     chart->setAnimationOptions(QChart::AllAnimations);
     chartView = new QChartView(chart, ui->chart_widget);
@@ -124,22 +155,25 @@ void chartwindow::benchmarkWithChart(QString title, int row)
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->resize(ui->chart_widget->size());
 
-    //Remove the axis setter points
+    //Removes the axis setter points
     seriesHighlight->remove(0,0);
     seriesClose->remove(0,0);
     seriesOpen->remove(0,0);
     series->remove(0, 0);
-    if (strategyPtr != nullptr) {
-        seriesTwo->remove(0, 0);
-        seriesTwo->remove(primaryMovingAverage.data.size()+primaryMovingAverage.offset, maximumValue);
-    }
     seriesClose->remove(dataframes.size(),maximumValue);
     seriesOpen->remove(dataframes.size(),maximumValue);
     seriesHighlight->remove(dataframes.size(),maximumValue);
+
+    if (strategyPtr != nullptr) { //Assumes that "allIndicators" is defined!
+        for (int c = 0; c < lineSeriesIndicators.size(); c++) {
+            lineSeriesIndicators[c]->remove(0, 0);
+            lineSeriesIndicators[c]->remove(allIndicators.at(c).data.size()+allIndicators.at(c).offset, maximumValue);
+        }
+    }
 }
 
 //Goal: FillTradesList(crossings, finance_settings) //finance_settings: Reinvest, capital amount, and other settings, short activated, fees
-void chartwindow::fillTradesList(const signalPoints allSignals)
+void chartwindow::fillTradesList(const signalPoints allSignals, const QVector<dataframe> *data)
 {
     QLineSeries *series = new QLineSeries();
     QLineSeries *series_index = new QLineSeries();
@@ -147,25 +181,114 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
 
     bool shorting = false;
     bool longing = true;
-    float capital = 100.0;
+    float capital = 100.0;      //starting capital
 
-    bool open = false;
-    bool openShort = false;
-    float openPos = 0.0;
+    bool open = false;          //keep false
+    bool openShort = false;     //keep false
+    float openPos = 0.0;        // anchor
 
-    portfolio->append(0,capital);
+    float averageLongOutcome = 0.0;
+
+    portfolio->append(0,0);
     series->append(0, capital);
     series_index->append(0, capital);
     int rowCount = ui->performanceTable->rowCount();
 
-    for(int c = 0; c < allSignals.value.size(); c++) {
-        if(open) {     //If in long -> close pos with result -> open short
-            open = false;
-            if(longing) {   //close long
-                float changePercent = allSignals.value.at(c)/openPos;
-                capital*=changePercent;
+    /*
+    //for(int c = 0; c < allSignals.value.size(); c++) {
+    //    if(open) {     //If in long -> close pos with result -> open short
+    //        open = false;
+    //        if(longing) {   //close long
+    //            float changePercent = allSignals.value.at(c)/openPos;
+    //            capital*=changePercent;
+    //            if(changePercent <= 1.0) { //save results from long pos
+    //                changePercent = (1-changePercent)*100.0; //wrong calc?
+    //                ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
+    //                ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(255, 0, 0)));
+    //            } else {
+    //                changePercent = (changePercent-1)*100.0;
+    //                ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
+    //                ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(0, 255, 0)));
+    //            }
+    //            ui->performanceTable->setItem(rowCount-1, 2, new QTableWidgetItem(QString::number(allSignals.value.at(c))));
+    //            ui->performanceTable->setItem(rowCount-1, 4, new QTableWidgetItem(QString::number(capital)));
+    //        }
+    //        if(shorting) {  //open short
+    //            openPos = allSignals.value.at(c);
+    //            rowCount++;
+    //            ui->performanceTable->setRowCount(rowCount);
+    //            ui->performanceTable->setItem(rowCount-1, 0, new QTableWidgetItem("Short"));
+    //            ui->performanceTable->setItem(rowCount-1, 1, new QTableWidgetItem(QString::number(openPos)));
+    //            openShort = true;
+    //        }
+    //
+    //        //update chart
+    //        series->append(c, capital);
+    //        series_index->append(allSignals.indices.at(c), capital);
+    //    } else {        //If not in pos -> open pos -> close short
+    //        if(shorting) {
+    //            if(openShort) {  //close short
+    //                float changePercent = openPos/allSignals.value.at(c);
+    //                capital*=changePercent;
+    //                if(changePercent <= 1.0) { //save results from short pos
+    //                    changePercent = (1-changePercent)*100.0;
+    //                    ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
+    //                    ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(255, 0, 0)));
+    //                } else {
+    //                    changePercent = (changePercent-1)*100.0;
+    //                    ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
+    //                    ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(0, 255, 0)));
+    //                }
+    //                ui->performanceTable->setItem(rowCount-1, 2, new QTableWidgetItem(QString::number(allSignals.value.at(c))));
+    //                ui->performanceTable->setItem(rowCount-1, 4, new QTableWidgetItem(QString::number(capital)));
+    //                openShort = false;
+    //            }
+    //        }
+    //        open = true;
+    //        if(longing) {   //open long
+    //            openPos = allSignals.value.at(c);
+    //            rowCount++;
+    //            ui->performanceTable->setRowCount(rowCount);
+    //            ui->performanceTable->setItem(rowCount-1, 1, new QTableWidgetItem(QString::number(openPos)));
+    //            ui->performanceTable->setItem(rowCount-1, 0, new QTableWidgetItem("Long"));
+    //        }
+    //        //update chart
+    //        portfolio->append(c, capital);
+    //        series->append(c, capital);
+    //        series_index->append(allSignals.indices.at(c), capital);
+    //    }
+    //}
+    */
+
+    // In order to get the drawdown, drawup etc, I surley need the stockdata.
+    unsigned int signalIndex = 0;
+    for (int c = 0; c < data->size(); c++) {
+        if (open) { //Currently in a position
+            float changePercentPrevDay = data->at(c).close_price/data->at(c-1).close_price;
+            capital*=changePercentPrevDay;
+            portfolio->append(c, capital);
+            if (c == allSignals.indices.at(signalIndex)) { //sell pos
+                // get the drawdown for this peroid
+                int startingIndex = allSignals.indices.at(signalIndex-1);
+                int numOfElements = allSignals.indices.at(signalIndex) - startingIndex;
+                float mdd = 0;
+                float maxDrawUp = 0;
+                if (numOfElements > 1) {
+                    getDrawDown(data->mid(startingIndex, numOfElements), mdd, maxDrawUp);
+                    ui->performanceTable->setItem(rowCount-1, 6, new QTableWidgetItem("+"+QString::number(maxDrawUp)+"%"));
+                    ui->performanceTable->item(rowCount-1, 6)->setForeground(QBrush(QColor(0, 255, 0)));
+
+                    ui->performanceTable->setItem(rowCount-1, 5, new QTableWidgetItem("-"+QString::number(mdd)+"%"));
+                    ui->performanceTable->item(rowCount-1, 5)->setForeground(QBrush(QColor(255, 0, 0)));
+                }
+
+                // results of closing trade
+                float changePercent = data->at(c).close_price/openPos;
+                series->append(c, capital);
+                signalIndex++;
+                open = false;
                 if(changePercent <= 1.0) { //save results from long pos
-                    changePercent = (1-changePercent)*100.0; //wrong calc?
+                    changePercent = (1-changePercent)*100.0;
                     ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
                     ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(255, 0, 0)));
                 } else {
@@ -173,66 +296,32 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
                     ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
                     ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(0, 255, 0)));
                 }
-                ui->performanceTable->setItem(rowCount-1, 2, new QTableWidgetItem(QString::number(allSignals.value.at(c))));
+                ui->performanceTable->setItem(rowCount-1, 2, new QTableWidgetItem(QString::number(data->at(c).close_price)));
                 ui->performanceTable->setItem(rowCount-1, 4, new QTableWidgetItem(QString::number(capital)));
             }
-            if(shorting) {  //open short
-                openPos = allSignals.value.at(c);
-                rowCount++;
-                ui->performanceTable->setRowCount(rowCount);
-                ui->performanceTable->setItem(rowCount-1, 0, new QTableWidgetItem("Short"));
-                ui->performanceTable->setItem(rowCount-1, 1, new QTableWidgetItem(QString::number(openPos)));
-                openShort = true;
-            }
 
-            //update chart
-            series->append(c, capital);
-            series_index->append(allSignals.indices.at(c), capital);
-        } else {        //If not in pos -> open pos -> close short
-            if(shorting) {
-                if(openShort) {  //close short
-                    float changePercent = openPos/allSignals.value.at(c);
-                    capital*=changePercent;
-                    if(changePercent <= 1.0) { //save results from short pos
-                        changePercent = (1-changePercent)*100.0;
-                        ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("-"+QString().setNum(changePercent, 'g', 3)));
-                        ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(255, 0, 0)));
-                    } else {
-                        changePercent = (changePercent-1)*100.0;
-                        ui->performanceTable->setItem(rowCount-1, 3, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
-                        ui->performanceTable->item(rowCount-1, 3)->setForeground(QBrush(QColor(0, 255, 0)));
-                    }
-                    ui->performanceTable->setItem(rowCount-1, 2, new QTableWidgetItem(QString::number(allSignals.value.at(c))));
-                    ui->performanceTable->setItem(rowCount-1, 4, new QTableWidgetItem(QString::number(capital)));
-                    openShort = false;
-                }
-            }
-            open = true;
-            if(longing) {   //open long
-                openPos = allSignals.value.at(c);
+        } else {   //Currently on cash
+            if (c == allSignals.indices.at(signalIndex)) {                //Buy pos
+                signalIndex++;
+                openPos = data->at(c).close_price;
+                open = true;
                 rowCount++;
                 ui->performanceTable->setRowCount(rowCount);
                 ui->performanceTable->setItem(rowCount-1, 1, new QTableWidgetItem(QString::number(openPos)));
                 ui->performanceTable->setItem(rowCount-1, 0, new QTableWidgetItem("Long"));
             }
-            //update chart
             portfolio->append(c, capital);
             series->append(c, capital);
-            series_index->append(allSignals.indices.at(c), capital);
+            //series_index->append(allSignals.indices.at(c), capital);
         }
     }
 
-    // In order to get the drawdown, drawup etc, I surley need the stockdata.
-
     qInfo() << "final capital" <<  QString::number(capital);
-    series->append(allSignals.value.size(), capital);
-    if(!allSignals.indices.isEmpty()) {
-        series_index->append(allSignals.indices.last(), capital);
-    }
+
 
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->addSeries(series_index);
+    //chart->addSeries(series_index);
     chart->addSeries(portfolio);
     //chart->addSeries(seriesClose);
     //chart->addSeries(seriesOpen);
@@ -244,11 +333,51 @@ void chartwindow::fillTradesList(const signalPoints allSignals)
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->resize(ui->performance_chart_widget->size());
 
-    fillDetails(allSignals);
+    fillDetails(allSignals, data);
+
+    // sets details calculated in this function
+    auto portfolioList = portfolio->points();
+    //getDrawDown(portfolioList.mid(1), aa, bb);
 }
 
+void chartwindow::getDrawDown(const QVector<dataframe> data, float &maximumDrawDown, float &maximumDrawUp) const
+{
+    float peak = 0;
+    maximumDrawDown = 0;
+    maximumDrawUp = 0;
+    /* Drawdown
+     * Volatilty = Risk
+     * Drawdown tells you how much the price went down from the highest point.
+     * Question: But not from your entry point right? It can happen that you sell on the lowest price, but still have a
+     * higher drawdown. Does it make sense? It is possible because it tells you how much it droped from the peak.
+     * When evaluating, remeber looking at the closes, not the highs and lows!
+     * */
+    int size = data.size();
+    int c = 0;
+    for (c = 0; c < size; c++) {
+        if (peak < data.at(c).close_price) {
+            peak = data.at(c).close_price;
+        } else {
+            float changePercent = data.at(c).close_price/peak;
+            if(changePercent <= 1.0) {
+                changePercent = (1-changePercent)*100.0;
+                if (maximumDrawDown < changePercent) {
+                    maximumDrawDown = changePercent;
+                }
+            }
+        }
+    }
+    float changePercent = peak/data.first().close_price;   //We know we bought at first. But now we wanna know how much we COULD have made
+    if(changePercent <= 1.0) {
+        changePercent = (1-changePercent)*100.0;
+        maximumDrawUp = changePercent;
+    } else {
+        changePercent = (changePercent-1)*100.0;
+        maximumDrawUp = changePercent;
+    }
+}
 
-void chartwindow::fillDetails(const signalPoints allSignals)
+void chartwindow::fillDetails(const signalPoints allSignals, const QVector<dataframe> *data)
 {
     bool shorting = false;
     bool longing = true;
@@ -349,26 +478,6 @@ void chartwindow::fillDetails(const signalPoints allSignals)
        ui->detailsTable->setItem(3, 0, new QTableWidgetItem("+"+QString().setNum(changePercent, 'g', 3)));
        ui->detailsTable->item(3, 0)->setForeground(QBrush(QColor(0, 255, 0)));
     }
-
-}
-
-QVector<float> chartwindow::simpleMovingAverage(unsigned short number, const QVector<dataframe> *data)
-{
-    //QLineSeries *movingAverageSeries = new QLineSeries();
-    //movingAverageSeries->setName(QString::number(number) + " SMA");
-    QVector<float> movingAverage;
-    movingAverage.clear();
-    float sum;
-    number = number - 1;
-    for(int c = number; c < data->size(); c++) {
-        sum = 0.0f;
-        for(int i = c-number; i <= c; i++) { //Sum from data[c-20] to data[c]
-            sum += data->at(i).close_price;
-        }
-        float average = sum/(number+1);
-        movingAverage.append(average);
-    }
-    return movingAverage;
 }
 
 void chartwindow::on_performanceTable_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
@@ -387,7 +496,7 @@ void chartwindow::on_performanceTable_currentCellChanged(int currentRow, int cur
 
 void chartwindow::on_recalculateButton_clicked()
 {
-        //benchmarkWithChart();
+    //benchmarkWithChart();
 }
 
 chartwindow::~chartwindow()

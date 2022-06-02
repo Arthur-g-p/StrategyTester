@@ -11,7 +11,7 @@ class benchmark
 {
 public:
     benchmark();
-    signalPoints getSignals(strategy strat, const QVector<dataframe> *data);
+    signalPoints getSignals(strategy *strat, const QVector<dataframe> *data);
     float getPerformance(signalPoints sngls);
     static float buyNholdPerformance(const QVector<dataframe> *data);
 };

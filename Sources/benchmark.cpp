@@ -5,31 +5,12 @@ benchmark::benchmark()
 
 }
 
-// only working for ma crossing chart yet
-signalPoints benchmark::getSignals(strategy strat, const QVector<dataframe> *data)
+// only working for ma crossing with the chart yet
+signalPoints benchmark::getSignals(strategy *strat, const QVector<dataframe> *data)
 {
-    strategy::sma mainSma = strat.getMainSma(data);
     signalPoints signalPoints;
-    bool maAbove;
-    for(int c = mainSma.offset; c < mainSma.data.size()+mainSma.offset; c++) {            //C is the global index
-        if(mainSma.data.at(c-mainSma.offset) > data->at(c).close_price) {
-            if(!maAbove) {
-                maAbove = true;
-                if(c+1 < data->size()) {
-                    signalPoints.value.append(data->at(c+1).open_price);
-                    signalPoints.indices.append(c);
-                }
-            }
-        } else {
-            if(maAbove) {
-                maAbove = false;
-                if(c+1 < data->size()) {
-                    signalPoints.value.append(data->at(c+1).open_price);
-                    signalPoints.indices.append(c);
-                }
-            }
-        }
-    }
+
+    signalPoints = strat->getSignals(data);
     return signalPoints;
 }
 
@@ -43,15 +24,12 @@ float benchmark::buyNholdPerformance(const QVector<dataframe> *data)
     //  Last price is the last given price
     //First price and last price
     int df_index = data->size()-1; //demands more than 1 period!!!
-    return ((data->at(df_index).open_price / data->at(0).open_price)-1)*100.0;
-
+    return ((data->at(df_index).open_price / data->at(0).open_price)-1)*100.0; //-1 correct?
 }
 
-
-// only working for ma crossing chart yet
 float benchmark::getPerformance(signalPoints sngls)//+, moneyManagement
 {
-    //money management, a lot more optionen to come
+    //money management, a lot more options to come
     bool shorting = false;
     bool longing = true;
     float capital = 100.0;
